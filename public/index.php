@@ -1,8 +1,5 @@
 <?php 
-    require_once '../vendor/autoload.php';
-
-    $loader = new \Twig\Loader\FilesystemLoader('../public/templates/index');
-    $twig = new \Twig\Environment($loader);
-    
-    echo $twig->render('index.html', ['name' => 'Fabien']);
+    require_once __DIR__.'/../vendor/autoload.php';
+    require_once __DIR__.'/../router/router.php';
+    var_dump($_REQUEST);
 ?>
