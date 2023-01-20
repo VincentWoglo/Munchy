@@ -1,18 +1,22 @@
 <?php
-    use Munchy\router\loader;
+    use munchy\router\loader;
     use Phroute\Phroute\RouteCollector;
+    use munchy\controller\loginController;
 
     $router = new RouteCollector();
 
     $router->get('/', function(){});
+
     $router->get('/login/', function()
     {
-        loader::view('login', [1,234,45]);
+        loader::controller('loginController@dump', [1,234,45]);
     });
+
     $router->post('/login/', function()
     {
-        loader::view('login', [1,234,45]);
+        loader::controller('loginController@dump', [1,234,45]);
     });
+
     $router->get('/home/', function()
     {
         return 'This route responds to requests with the POST method at the path /example/1234. It passes in the parameter as a function argument.';

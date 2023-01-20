@@ -12,6 +12,10 @@ class ComposerStaticInit67d4f8df59d10a484f024769d766eb9b
     );
 
     public static $prefixLengthsPsr4 = array (
+        'm' => 
+        array (
+            'munchy\\' => 7,
+        ),
         'T' => 
         array (
             'Twig\\' => 5,
@@ -25,13 +29,13 @@ class ComposerStaticInit67d4f8df59d10a484f024769d766eb9b
         array (
             'Phroute\\Phroute\\' => 16,
         ),
-        'M' => 
-        array (
-            'Munchy\\' => 7,
-        ),
     );
 
     public static $prefixDirsPsr4 = array (
+        'munchy\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/',
+        ),
         'Twig\\' => 
         array (
             0 => __DIR__ . '/..' . '/twig/twig/src',
@@ -48,15 +52,10 @@ class ComposerStaticInit67d4f8df59d10a484f024769d766eb9b
         array (
             0 => __DIR__ . '/..' . '/phroute/phroute/src/Phroute',
         ),
-        'Munchy\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/',
-        ),
     );
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
-        'Munchy\\router\\loader' => __DIR__ . '/../..' . '/router/loader.php',
         'Phroute\\Phroute\\Dispatcher' => __DIR__ . '/..' . '/phroute/phroute/src/Phroute/Dispatcher.php',
         'Phroute\\Phroute\\Exception\\BadRouteException' => __DIR__ . '/..' . '/phroute/phroute/src/Phroute/Exception/BadRouteException.php',
         'Phroute\\Phroute\\Exception\\HttpException' => __DIR__ . '/..' . '/phroute/phroute/src/Phroute/Exception/HttpException.php',

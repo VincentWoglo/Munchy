@@ -7,7 +7,6 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
-    'Munchy\\router\\loader' => $baseDir . '/router/loader.php',
     'Phroute\\Phroute\\Dispatcher' => $vendorDir . '/phroute/phroute/src/Phroute/Dispatcher.php',
     'Phroute\\Phroute\\Exception\\BadRouteException' => $vendorDir . '/phroute/phroute/src/Phroute/Exception/BadRouteException.php',
     'Phroute\\Phroute\\Exception\\HttpException' => $vendorDir . '/phroute/phroute/src/Phroute/Exception/HttpException.php',
