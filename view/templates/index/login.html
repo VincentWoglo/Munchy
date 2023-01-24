@@ -35,6 +35,11 @@
             </section>
         </main>
     </div>
-    <script src="{{ script }}"></script>
+    {% for scriptModule in javascriptModule %}
+        <script type="module" src="{{ scriptModule }}"></script>
+    {% endfor %}
+    {% for script in javascript %}
+        <script src="{{ script }}"></script>
+    {% endfor %}
 </body>
 </html>

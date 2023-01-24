@@ -5,7 +5,9 @@
 
     $router = new RouteCollector();
 
-    $router->get('/', function(){});
+    $router->get('/', function(){
+        return 'This route responds to requests with the POST method at the path /example/1234. It passes in the parameter as a function argument.';
+    });
 
     $router->get('/login/', function()
     {
