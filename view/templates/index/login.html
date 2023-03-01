@@ -19,15 +19,20 @@
                             <p class="errorLog" id="errorLog"></p>
                         </div>
                         <form action="" method="POST" class="loginInputWrapper">
-                            <div class="emailInputWrapper">
+                            <div class="emailInputWrapper" id="emailInputWrapper">
                                 <label class="emailInputLabel" for="emailInput">Email</label> <br />
-                                <input type="text" class="emailInput" name="emailInput" id="emailInput" placeholder="Enter email">
+                                <input type="text" class="emailInput" name="emailInput" id="emailInput" placeholder="Example@example.com">
+                                <p class="emailcontainAtSymbolError" id="emailcontainAtSymbolError"></p>
+                                <p class="emailisMinLengthError" id="emailisMinLengthError"></p>
+                                <p class="containsCapitalLetterError" id="containsCapitalLetterError"></p>
                             </div>
                             <div class="passwordInputWrapper">
                                 <label class="passwordInputLabel" for="passwordInput">Password</label> <br />
                                 <input type="password" class="passwordInput" name="passwordInput" id="passwordInput" placeholder="Enter password">
+                                <p class="passwordMinLengthError" id="passwordMinLengthError"></p>
                             </div>
                             <div class="submitInputWrapper">
+                                <div class="loader"></div> <!-- Change input to button and put loader in it -->
                                 <input type="submit" class="loginSubmitButton" name="loginSubmitButton" id="loginSubmitButton" value="Sign In">
                             </div>
                         </form>

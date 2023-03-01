@@ -3,6 +3,10 @@
 
     class loginController extends controller
     {
+        //instantiate userLogin in model
+
+
+        
         function dump(){
             self::SendToView('login');
         }

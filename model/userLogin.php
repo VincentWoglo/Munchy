@@ -1,6 +1,6 @@
 <?php
-    class userLogin extends login implements IloginValidator
+    class userLogin extends login
     {
-
+        
     }
 ?>

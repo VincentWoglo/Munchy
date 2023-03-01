@@ -9,6 +9,8 @@
         return 'This route responds to requests with the POST method at the path /example/1234. It passes in the parameter as a function argument.';
     });
 
+    $router->get('/index/', function(){});
+
     $router->get('/login/', function()
     {
         loader::controller('loginController@dump', [1,234,45]);
@@ -17,6 +19,15 @@
     $router->post('/login/', function()
     {
         loader::controller('loginController@dump', [1,234,45]);
+    });
+
+    $router->get('/register/', function()
+    {
+        loader::controller('registerController@register', [1,234,45]);
+    });
+    $router->post('/register/', function()
+    {
+        loader::controller('registerController@register', [1,234,45]);
     });
 
     $router->get('/home/', function()

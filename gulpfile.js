@@ -4,14 +4,14 @@ const sass = require('gulp-sass')(require('sass'));
 const csso = require('gulp-csso');
 
 function Sass(){
-    return gulp.src('./public/style/scss/**/*.scss')
+    return gulp.src('./view/style/scss/**/*.scss')
         .pipe(sass())
         .pipe(csso())
-        .pipe(gulp.dest('./public/style/css'))
+        .pipe(gulp.dest('./view/style/css'))
 }
 
 function WatchTask(){
-    watch('./public/style/scss/**/*.scss',
+    watch('./view/style/scss/**/*.scss',
     series(Sass))
 }
 

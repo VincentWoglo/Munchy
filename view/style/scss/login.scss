@@ -77,6 +77,22 @@ body{
                 .loginInputWrapper{
                     margin-top: 99px;
                     width: 100%;
+                    .emailInputWrapper{ //Add Password
+                        .emailcontainAtSymbolError, .emailisMinLengthError, .containsCapitalLetterError{
+                            display: none;
+                            color: red;
+                            margin-top: 8px;
+                            font-size: fonts.$font-size-12;
+                        }
+                    }
+                    .passwordInputWrapper{ //Add Password
+                        .passwordMinLengthError{
+                            display: none;
+                            color: red;
+                            margin-top: 8px;
+                            font-size: fonts.$font-size-12;
+                        }
+                    }
                     .emailInputWrapper, .passwordInputWrapper{
                         width: 100%;
                         margin: auto;
@@ -111,8 +127,8 @@ body{
                             padding: 16px;
                             margin: auto;
                             margin-top: 32px;
-                            background-color: colors.$cornflower-blue;
-                            border: 1px colors.$cornflower-blue solid;
+                            background-color: colors.$governor-bay;
+                            border: 1px colors.$governor-bay solid;
                             cursor: pointer;
                             border-radius: 8px;
                             color: colors.$white;

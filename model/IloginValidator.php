@@ -1,9 +1,10 @@
 <?php
     interface IloginValidator{
         /**
-         * @return string
+         * @param int $minChars
+         * @return bool
          */
-        function getNameLength();
+        public function isMinLength(int $minChars);
 
 
         /**
@@ -12,6 +13,30 @@
          * 
          * @return bool
          */
-        function isValidEmail();
+        public function containsAtSymbol();
+
+        /**
+         * Check if the user is using a valid email client
+         * Checks for popular email clients
+         * 
+         * @return bool
+         */
+        public function isValidEmailClient();
+
+
+        /**
+         * Check if the input contains numbers [0-9]
+         * 
+         * @return bool
+         */
+        public function containsNumbers();
+
+
+        /**
+         * Check if the input contains special characters. Ex: ~!@#$%^&*()
+         * 
+         * @return bool
+         */
+        public function containsSpecialChars();
     }
 ?>

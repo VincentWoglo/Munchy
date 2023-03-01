@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ stylesheet }}">
+    <title>Register - Welcome to Munchy</title>
+</head>
+<body>
+    <div class="container">
+        <main class="main">
+            <section class="registerSection">
+                    <div class="wrapper">
+                        <div class="logoWrapper">
+                            <h1 class="logoText">Munchy</h1>
+                        </div>
+                        <div class="errors" id="errors">
+                            <p class="errorLog" id="errorLog"></p>
+                        </div>
+                        <form action="" method="POST" class="registerInputWrapper">
+                            <div class="usernameInputWrapper">
+                                <label class="usernameInputLabel" for="usernameInput">Username</label> <br />
+                                <input type="text" class="usernameInput" name="usernameInput" id="usernameInput" placeholder="Enter username">
+                                <p class="usernameMinLengthError" id="usernameMinLengthError"></p>
+                            </div>
+                            <div class="emailInputWrapper" id="emailInputWrapper">
+                                <label class="emailInputLabel" for="emailInput">Email</label> <br />
+                                <input type="text" class="emailInput" name="emailInput" id="emailInput" placeholder="Example@example.com">
+                                <p class="emailcontainAtSymbolError" id="emailcontainAtSymbolError"></p>
+                                <p class="emailisMinLengthError" id="emailisMinLengthError"></p>
+                                <p class="containsCapitalLetterError" id="containsCapitalLetterError"></p>
+                            </div>
+                            <div class="passwordInputWrapper">
+                                <label class="passwordInputLabel" for="passwordInput">Password</label> <br />
+                                <input type="password" class="passwordInput" name="passwordInput" id="passwordInput" placeholder="Enter password">
+                                <p class="passwordMinLengthError" id="passwordMinLengthError"></p>
+                            </div>
+                            <div class="re-passwordInputWrapper">
+                                <label class="re-passwordInputLabel" for="passwordInput">Re-Password</label> <br />
+                                <input type="password" class="re-passwordInput" name="re-passwordInput" id="re-passwordInput" placeholder="Enter password">
+                                <p class="re-passwordMinLengthError" id="re-passwordMinLengthError"></p>
+                            </div>
+                            <div class="submitInputWrapper">
+                                <div class="loader"></div> <!-- Change input to button and put loader in it -->
+                                <input type="submit" class="registerSubmitButton" name="registerSubmitButton" id="registerSubmitButton" value="Register">
+                            </div>
+                        </form>
+                </div>
+            </section>
+        </main>
+    </div>
+    {% for scriptModule in javascriptModule %}
+        <script type="module" src="{{ scriptModule }}"></script>
+    {% endfor %}
+    {% for script in javascript %}
+        <script src="{{ script }}"></script>
+    {% endfor %}
+</body>
+</html>
