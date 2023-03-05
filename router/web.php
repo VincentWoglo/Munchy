@@ -9,7 +9,10 @@
         return 'This route responds to requests with the POST method at the path /example/1234. It passes in the parameter as a function argument.';
     });
 
-    $router->get('/index/', function(){});
+    $router->get('/index/', function(){
+        loader::controller('indexController@dump', [1,234,45]);
+    });
+    $router->post('/index/', function(){});
 
     $router->get('/login/', function()
     {
