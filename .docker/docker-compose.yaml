@@ -1,0 +1,24 @@
+version: '3.4'
+
+services:
+  php:
+    container_name: munchy
+    build: "./"
+    image: php:8.2.4RC1-apache-bullseye
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src:/var/www
+  
+  db:
+    image: mysql
+    container_name: mysql
+    ports: 
+      - "3360:3361"
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    ports:
+      - "3400:80"
