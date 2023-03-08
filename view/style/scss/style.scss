@@ -51,3 +51,9 @@ table {
 }
 
 /*Styling starts here*/
+body::selection {
+	background: colors.$cornflower-blue; /* WebKit/Blink Browsers */
+}
+body::-moz-selection {
+	background: colors.$cornflower-blue; /* WebKit/Blink Browsers */
+}

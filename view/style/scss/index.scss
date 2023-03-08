@@ -51,15 +51,115 @@ table {
 }
 
 /*Styling starts here*/
-
+body {
+	background-color: colors.$cod-gray;
+}
 .navigation-section {
     .container {
         width: 90%;
         max-width: 1280px;
-        border: 1px red solid;
+        // border: 1px red solid;
+		margin: auto;
+		display: flex;
+		align-items: center;
+		flex-direction: row;
+		justify-content: space-between;
+		padding: 40px 0;
         .logo-wrapper {
             display: flex;
             align-items: center;
+			cursor: pointer;
+			.logo_text {
+				font-size: 24px;
+				font-weight: 700;
+				text-transform: uppercase;
+				margin-left: 10.32px;
+				font-family: fonts.$inter-font-family;
+				color: colors.$white;
+			}
         }
+		.menu_list_wrapper {
+			.menu_list {
+				display: flex;
+				align-items: center;
+				column-gap: 40px;
+				li {
+					cursor: pointer;
+				}
+			}
+		}
+		.menu_list_wrapper, .navigation_Cta_wrapper {
+			font-family: fonts.$effra-light-font-family;
+			color: colors.$white;
+			font-weight: 700;
+			font-size: fonts.$font-size-18;
+			line-height: 100%;
+		}
+		.navigation_Cta_wrapper {
+			column-gap: 40px;
+			display: flex;
+			align-items: center;
+			a {
+				cursor: pointer;
+				color: colors.$white;
+				display: block;
+				text-decoration: none;
+			}
+			.navigation_register {
+				padding: 12px 32px;
+				color: colors.$cod-gray;
+				background-color: colors.$white;
+				border-radius: 40px;
+			}
+		}
     }
+}
+
+.hero-section {
+	.container {
+        width: 90%;
+        max-width: 1280px;
+		margin: auto;
+		display: flex;
+		align-items: center;
+		flex-direction: row;
+		justify-content: space-between;
+		.hero-text-wrapper {
+			color: colors.$white;
+			max-width: 700px;
+			margin: auto;
+			margin-top: 132px;
+			h1 {
+				text-align: center;
+				font-size: fonts.$font-size-72;
+				font-weight: 700;
+				font-family: fonts.$effra-heavy-font-family;
+				line-height: 112%;
+			}
+			p {
+				font-family: fonts.$effra-light-font-family;
+				font-weight: 600;
+				line-height: 150%;
+				font-size: fonts.$font-size-18;
+				text-align: center;
+				margin-top: 24px;
+				color: colors.$grey;
+			}
+			.hero-cta {
+				display: block;
+				margin: auto;
+				margin-top: 40px;
+				padding: 16px 32px;
+				cursor: pointer;
+				border-radius: 40px;
+				background-color: colors.$governor-bay;
+				border: 1px colors.$governor-bay;
+				line-height: 140%;
+				font-size: fonts.$font-size-18;
+				font-family: fonts.$effra-light-font-family;
+				font-weight: 700;
+				color: colors.$white;
+			}
+		}
+	}
 }
