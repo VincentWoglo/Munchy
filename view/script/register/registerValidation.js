@@ -6,7 +6,6 @@ const PASSWORD_INPUT = document.getElementById('passwordInput');
 const RE_PASSWORD_INPUT = document.getElementById('re-passwordInput');
 const REGISTER_SUBMIT_BUTTON = document.getElementById('registerSubmitButton');
 
-alert('dfjk')
 let validateEmail = ()=>{
     let emailParams = {
         isValidEmail:  false,
