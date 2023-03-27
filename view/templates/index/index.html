@@ -78,12 +78,15 @@
                 </div>
                 <form class="newsletter-form">
                     <h3 class="">Get Started for Free</h3>
-                    <input type="text" class=""> <br />
-                    <input type="text" class=""> <br />
+                    <input type="text" class="" placeholder="Full Name"> <br />
+                    <input type="text" class="" placeholder="Email Address"> <br />
                     <button class="">join newsletter</button>
                 </form>
             </div>
         </section>
     </main>
+    {% block footer %}
+        {% include '_footer.html' %}
+    {% endblock %}
 </body>
 </html>
