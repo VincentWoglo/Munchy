@@ -372,18 +372,16 @@ body {
 	margin-top: 53px;
 	.container {
 		box-sizing: border-box;
-		padding: 111px 0;
 		.top-footer-wrapper {
 			max-width: 1215px;
 			margin: auto;
 			display: flex;
 			align-items: baseline;
-			border: 1px red solid;
 			column-gap: 116px;
 			justify-content: space-between;
+			padding: 111px 0;
 			.left-top-footer {
 				max-width: 522px;
-				border: 1px red solid;
 				font-family: fonts.$manrope-font-family;
 				color: colors.$white;
 				h2 {
@@ -401,14 +399,42 @@ body {
 				color: colors.$white;
 				max-width: 577px;
 				display: flex;
-				border: 1px red solid;
 				justify-content: space-between;
 				font-family: fonts.$manrope-font-family;
+				column-gap: 40px;
 				div {
 					h2 {
 						font-weight: 700;
 						font-size: fonts.$font-size-20;
 					}
+				}
+				ul {
+					margin-top: 35px;
+					li:not(:first-child) {
+						margin-top: 24px;
+						font-size: fonts.$font-size-16;
+						font-weight: 500;
+					}
+				}
+			}
+		}
+		hr {
+			border: 1px #404444 solid;
+		}
+		.bottom-footer-menu {
+			max-width: 1215px;
+			margin: auto;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			font-family: fonts.$manrope-font-family;
+			padding: 19px 0 23px;
+			
+			p {
+				color: colors.$white;
+				font-weight: 500;
+				strong {
+					font-weight: 700;
 				}
 			}
 		}

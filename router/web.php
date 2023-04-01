@@ -38,6 +38,12 @@
         return 'This route responds to requests with the POST method at the path /example/1234. It passes in the parameter as a function argument.';
     });
 
+
+    $router->get('/dashboard/', function()
+    {
+        return loader::controller('registerController@register', [1,234,45]);
+    });
+
     $dispatcher = new Phroute\Phroute\Dispatcher($router->getData());
     $response = $dispatcher->dispatch($_SERVER['REQUEST_METHOD'], parse_url($_SERVER['PATH_INFO'], PHP_URL_PATH));
 
