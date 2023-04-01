@@ -41,7 +41,7 @@
 
     $router->get('/dashboard/', function()
     {
-        return loader::controller('registerController@register', [1,234,45]);
+        return loader::controller('dashboardHomeController@home', [1,234,45]);
     });
 
     $dispatcher = new Phroute\Phroute\Dispatcher($router->getData());
