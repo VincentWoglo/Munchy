@@ -9,6 +9,7 @@
  */
 namespace PHPUnit\Event\TestSuite;
 
+use function class_exists;
 use function explode;
 use PHPUnit\Event\Code\TestCollection;
 use PHPUnit\Event\RuntimeException;
@@ -82,7 +83,7 @@ abstract class TestSuite
             // @codeCoverageIgnoreEnd
         }
 
-        if ($testSuite->isForTestClass()) {
+        if (class_exists($testSuite->getName())) {
             try {
                 $reflector = new ReflectionClass($testSuite->getName());
 

@@ -12,21 +12,18 @@ namespace PHPUnit\TextUI\Output\TestDox;
 use const PHP_EOL;
 use function array_map;
 use function assert;
-use function count;
 use function explode;
 use function implode;
 use function preg_match;
 use function preg_split;
 use function rtrim;
-use function sprintf;
 use function str_starts_with;
 use function trim;
 use PHPUnit\Event\Code\Throwable;
 use PHPUnit\Event\TestData\NoDataSetFromDataProviderException;
 use PHPUnit\Framework\TestStatus\TestStatus;
-use PHPUnit\Logging\TestDox\TestResult as TestDoxTestResult;
+use PHPUnit\Logging\TestDox\TestResult;
 use PHPUnit\Logging\TestDox\TestResultCollection;
-use PHPUnit\TestRunner\TestResult\TestResult;
 use PHPUnit\TextUI\Output\Printer;
 use PHPUnit\Util\Color;
 
@@ -47,7 +44,7 @@ final class ResultPrinter
     /**
      * @psalm-param array<string, TestResultCollection> $tests
      */
-    public function print(array $tests, TestResult $result): void
+    public function print(array $tests): void
     {
         foreach ($tests as $prettifiedClassName => $_tests) {
             $this->printPrettifiedClassName($prettifiedClassName);
@@ -58,8 +55,6 @@ final class ResultPrinter
 
             $this->printer->print(PHP_EOL);
         }
-
-        $this->printTestRunnerWarningsAndDeprecations($result);
     }
 
     public function flush(): void
@@ -84,7 +79,7 @@ final class ResultPrinter
     /**
      * @throws NoDataSetFromDataProviderException
      */
-    private function printTestResult(TestDoxTestResult $test): void
+    private function printTestResult(TestResult $test): void
     {
         $this->printTestResultHeader($test);
         $this->printTestResultBody($test);
@@ -93,7 +88,7 @@ final class ResultPrinter
     /**
      * @throws NoDataSetFromDataProviderException
      */
-    private function printTestResultHeader(TestDoxTestResult $test): void
+    private function printTestResultHeader(TestResult $test): void
     {
         $buffer = ' ' . $this->symbolFor($test->status()) . ' ';
 
@@ -111,13 +106,9 @@ final class ResultPrinter
         $this->printer->print($test->test()->testDox()->prettifiedMethodName($this->colors) . PHP_EOL);
     }
 
-    private function printTestResultBody(TestDoxTestResult $test): void
+    private function printTestResultBody(TestResult $test): void
     {
         if ($test->status()->isSuccess()) {
-            return;
-        }
-
-        if (!$test->hasThrowable()) {
             return;
         }
 
@@ -126,7 +117,7 @@ final class ResultPrinter
         $this->printTestResultBodyEnd($test);
     }
 
-    private function printTestResultBodyStart(TestDoxTestResult $test): void
+    private function printTestResultBodyStart(TestResult $test): void
     {
         $this->printer->print(
             $this->prefixLines(
@@ -138,7 +129,7 @@ final class ResultPrinter
         $this->printer->print(PHP_EOL);
     }
 
-    private function printTestResultBodyEnd(TestDoxTestResult $test): void
+    private function printTestResultBodyEnd(TestResult $test): void
     {
         $this->printer->print(PHP_EOL);
 
@@ -152,7 +143,7 @@ final class ResultPrinter
         $this->printer->print(PHP_EOL);
     }
 
-    private function printThrowable(TestDoxTestResult $test): void
+    private function printThrowable(TestResult $test): void
     {
         $throwable = $test->throwable();
 
@@ -381,71 +372,5 @@ final class ResultPrinter
         }
 
         return '?';
-    }
-
-    private function printTestRunnerWarningsAndDeprecations(TestResult $result): void
-    {
-        if (!$result->hasTestRunnerTriggeredWarningEvents() &&
-            !$result->hasTestRunnerTriggeredDeprecationEvents()) {
-            return;
-        }
-
-        if ($result->hasTestRunnerTriggeredWarningEvents()) {
-            $warnings = [];
-
-            foreach ($result->testRunnerTriggeredWarningEvents() as $warning) {
-                $warnings[] = $warning->message();
-            }
-
-            $this->printList($warnings, 'test runner warning');
-        }
-
-        if ($result->hasTestRunnerTriggeredDeprecationEvents()) {
-            $deprecations = [];
-
-            foreach ($result->testRunnerTriggeredWarningEvents() as $deprecation) {
-                $deprecations[] = $deprecation->message();
-            }
-
-            $this->printList($deprecations, 'test runner deprecation');
-        }
-    }
-
-    /**
-     * @psalm-param list<string> $elements
-     */
-    private function printList(array $elements, string $type): void
-    {
-        $count = count($elements);
-
-        $this->printer->print(
-            sprintf(
-                "There %s %d %s%s:\n\n",
-                ($count === 1) ? 'was' : 'were',
-                $count,
-                $type,
-                ($count === 1) ? '' : 's'
-            )
-        );
-
-        $i = 1;
-
-        foreach ($elements as $element) {
-            $this->printListElement($i++, $element);
-        }
-
-        $this->printer->print("\n");
-    }
-
-    private function printListElement(int $number, string $text): void
-    {
-        $this->printer->print(
-            sprintf(
-                "%s%d) %s\n",
-                $number > 1 ? "\n" : '',
-                $number,
-                trim($text),
-            )
-        );
     }
 }

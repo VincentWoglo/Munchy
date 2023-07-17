@@ -10,19 +10,21 @@
          * @param string $ViewName
          * @param array The $Data param allow you to pass data from Controller to View
          */
-        static function sendToView($ViewName, $Data = []): void
+        static function sendToView($viewName, $data = []): void
         {
-            extract($Data);
-            require_once(__DIR__.'/../view/'.$ViewName.'.php');
+            extract($data);
+            require_once(__DIR__.'/../view/'.$viewName.'.php');
         }
 
 
         /**
-         * @param string @PathName
+         * Redirects user to given path
+         * 
+         * @param string $PathName
          */
-        static function redirect($PathName): void
+        static function redirect($pathName): void
         {
-            header('Location'.$_SERVER['SERVER_NAME'].'/'.$PathName);
+            header('Location'.$_SERVER['SERVER_NAME'].'/'.$pathName);
         }
 
 

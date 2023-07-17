@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 use PHPUnit\Event\Facade;
+use PHPUnit\Framework\TestCase;
 use PHPUnit\Runner\CodeCoverage;
 use PHPUnit\TextUI\Configuration\Registry as ConfigurationRegistry;
 use PHPUnit\TextUI\Configuration\CodeCoverageFilterRegistry;
@@ -43,10 +44,13 @@ function __phpunit_run_isolated_test()
     require_once '{filename}';
 
     if ({collectCodeCoverageInformation}) {
-        CodeCoverage::instance()->init(ConfigurationRegistry::get(), CodeCoverageFilterRegistry::instance());
+        CodeCoverageFilterRegistry::init(ConfigurationRegistry::get());
+        CodeCoverage::init(ConfigurationRegistry::get());
     }
 
     $test = new {className}('{methodName}');
+
+    \assert($test instanceof TestCase);
 
     $test->setData('{dataName}', unserialize('{data}'));
     $test->setDependencyInput(unserialize('{dependencyInput}'));
@@ -80,7 +84,7 @@ function __phpunit_run_isolated_test()
     print serialize(
         [
             'testResult'    => $test->result(),
-            'codeCoverage'  => {collectCodeCoverageInformation} ? CodeCoverage::instance()->codeCoverage() : null,
+            'codeCoverage'  => {collectCodeCoverageInformation} ? CodeCoverage::instance() : null,
             'numAssertions' => $test->numberOfAssertionsPerformed(),
             'output'        => $output,
             'events'        => $dispatcher->flush(),
@@ -102,11 +106,11 @@ set_error_handler('__phpunit_error_handler');
 
 restore_error_handler();
 
-ConfigurationRegistry::loadFrom('{serializedConfiguration}');
-(new PhpHandler)->handle(ConfigurationRegistry::get()->php());
-
 if ('{bootstrap}' !== '') {
     require_once '{bootstrap}';
 }
+
+ConfigurationRegistry::loadFrom('{serializedConfiguration}');
+(new PhpHandler)->handle(ConfigurationRegistry::get()->php());
 
 __phpunit_run_isolated_test();

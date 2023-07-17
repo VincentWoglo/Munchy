@@ -19,6 +19,7 @@ use PHPUnit\Framework\Attributes\BackupGlobals;
 use PHPUnit\Framework\Attributes\BackupStaticProperties;
 use PHPUnit\Framework\Attributes\Before;
 use PHPUnit\Framework\Attributes\BeforeClass;
+use PHPUnit\Framework\Attributes\CodeCoverageIgnore;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\CoversNothing;
@@ -98,6 +99,11 @@ final class AttributeParser implements Parser
                     assert($attributeInstance instanceof BackupStaticProperties);
 
                     $result[] = Metadata::backupStaticPropertiesOnClass($attributeInstance->enabled());
+
+                    break;
+
+                case CodeCoverageIgnore::class:
+                    $result[] = Metadata::codeCoverageIgnoreOnClass();
 
                     break;
 
@@ -340,6 +346,11 @@ final class AttributeParser implements Parser
 
                 case BeforeClass::class:
                     $result[] = Metadata::beforeClass();
+
+                    break;
+
+                case CodeCoverageIgnore::class:
+                    $result[] = Metadata::codeCoverageIgnoreOnMethod();
 
                     break;
 

@@ -103,7 +103,7 @@ abstract class Assert
     /**
      * @throws ExpectationFailedException
      */
-    final public static function assertIsList(mixed $array, string $message = ''): void
+    final public static function assertIsList(array $array, string $message = ''): void
     {
         static::assertThat(
             $array,
@@ -229,12 +229,11 @@ abstract class Assert
      *
      * @throws Exception
      * @throws ExpectationFailedException
-     * @throws GeneratorNotSupportedException
      */
     final public static function assertCount(int $expectedCount, Countable|iterable $haystack, string $message = ''): void
     {
         if ($haystack instanceof Generator) {
-            throw GeneratorNotSupportedException::fromParameterName('$haystack');
+            throw new GeneratorNotSupportedException;
         }
 
         static::assertThat(
@@ -249,14 +248,9 @@ abstract class Assert
      *
      * @throws Exception
      * @throws ExpectationFailedException
-     * @throws GeneratorNotSupportedException
      */
     final public static function assertNotCount(int $expectedCount, Countable|iterable $haystack, string $message = ''): void
     {
-        if ($haystack instanceof Generator) {
-            throw GeneratorNotSupportedException::fromParameterName('$haystack');
-        }
-
         $constraint = new LogicalNot(
             new Count($expectedCount)
         );
@@ -390,16 +384,11 @@ abstract class Assert
      * Asserts that a variable is empty.
      *
      * @throws ExpectationFailedException
-     * @throws GeneratorNotSupportedException
      *
      * @psalm-assert empty $actual
      */
     final public static function assertEmpty(mixed $actual, string $message = ''): void
     {
-        if ($actual instanceof Generator) {
-            throw GeneratorNotSupportedException::fromParameterName('$actual');
-        }
-
         static::assertThat($actual, static::isEmpty(), $message);
     }
 
@@ -407,16 +396,11 @@ abstract class Assert
      * Asserts that a variable is not empty.
      *
      * @throws ExpectationFailedException
-     * @throws GeneratorNotSupportedException
      *
      * @psalm-assert !empty $actual
      */
     final public static function assertNotEmpty(mixed $actual, string $message = ''): void
     {
-        if ($actual instanceof Generator) {
-            throw GeneratorNotSupportedException::fromParameterName('$actual');
-        }
-
         static::assertThat($actual, static::logicalNot(static::isEmpty()), $message);
     }
 
@@ -1470,18 +1454,9 @@ abstract class Assert
      *
      * @throws Exception
      * @throws ExpectationFailedException
-     * @throws GeneratorNotSupportedException
      */
     final public static function assertSameSize(Countable|iterable $expected, Countable|iterable $actual, string $message = ''): void
     {
-        if ($expected instanceof Generator) {
-            throw GeneratorNotSupportedException::fromParameterName('$expected');
-        }
-
-        if ($actual instanceof Generator) {
-            throw GeneratorNotSupportedException::fromParameterName('$actual');
-        }
-
         static::assertThat(
             $actual,
             new SameSize($expected),
@@ -1495,18 +1470,9 @@ abstract class Assert
      *
      * @throws Exception
      * @throws ExpectationFailedException
-     * @throws GeneratorNotSupportedException
      */
     final public static function assertNotSameSize(Countable|iterable $expected, Countable|iterable $actual, string $message = ''): void
     {
-        if ($expected instanceof Generator) {
-            throw GeneratorNotSupportedException::fromParameterName('$expected');
-        }
-
-        if ($actual instanceof Generator) {
-            throw GeneratorNotSupportedException::fromParameterName('$actual');
-        }
-
         static::assertThat(
             $actual,
             new LogicalNot(
@@ -1824,9 +1790,9 @@ abstract class Assert
      *
      * @throws ExpectationFailedException
      */
-    final public static function assertJson(string $actual, string $message = ''): void
+    final public static function assertJson(string $actualJson, string $message = ''): void
     {
-        static::assertThat($actual, static::isJson(), $message);
+        static::assertThat($actualJson, static::isJson(), $message);
     }
 
     /**

@@ -52,7 +52,6 @@ use PHPUnit\TextUI\Command\ShowHelpCommand;
 use PHPUnit\TextUI\Command\ShowVersionCommand;
 use PHPUnit\TextUI\Command\VersionCheckCommand;
 use PHPUnit\TextUI\Command\WarmCodeCoverageCacheCommand;
-use PHPUnit\TextUI\Configuration\CodeCoverageFilterRegistry;
 use PHPUnit\TextUI\Configuration\Configuration;
 use PHPUnit\TextUI\Configuration\PhpHandler;
 use PHPUnit\TextUI\Configuration\Registry;
@@ -63,7 +62,6 @@ use PHPUnit\TextUI\Output\Printer;
 use PHPUnit\TextUI\XmlConfiguration\Configuration as XmlConfiguration;
 use PHPUnit\TextUI\XmlConfiguration\DefaultConfiguration;
 use PHPUnit\TextUI\XmlConfiguration\Loader;
-use SebastianBergmann\Timer\Timer;
 use Throwable;
 
 /**
@@ -103,17 +101,16 @@ final class Application
 
             $pharExtensions = null;
 
-            if (!$configuration->noExtensions()) {
-                if ($configuration->hasPharExtensionDirectory()) {
-                    $pharExtensions = (new PharLoader)->loadPharExtensionsInDirectory(
-                        $configuration->pharExtensionDirectory()
-                    );
-                }
-
-                $this->bootstrapExtensions($configuration);
+            if ($configuration->loadPharExtensions() &&
+                $configuration->hasPharExtensionDirectory()) {
+                $pharExtensions = (new PharLoader)->loadPharExtensionsInDirectory(
+                    $configuration->pharExtensionDirectory()
+                );
             }
 
-            CodeCoverage::instance()->init($configuration, CodeCoverageFilterRegistry::instance());
+            $this->bootstrapExtensions($configuration);
+
+            CodeCoverage::init($configuration);
 
             $printer = OutputFacade::init($configuration);
 
@@ -133,9 +130,6 @@ final class Application
 
             EventFacade::seal();
 
-            $timer = new Timer;
-            $timer->start();
-
             $runner = new TestRunner;
 
             $runner->run(
@@ -143,8 +137,6 @@ final class Application
                 $resultCache,
                 $testSuite
             );
-
-            $duration = $timer->stop();
 
             $testDoxResult = null;
 
@@ -168,8 +160,8 @@ final class Application
 
             $result = TestResultFacade::result();
 
-            OutputFacade::printResult($result, $testDoxResult, $duration);
-            CodeCoverage::instance()->generateReports($printer, $configuration);
+            OutputFacade::printResult($result, $testDoxResult);
+            CodeCoverage::generateReports($printer, $configuration);
 
             $shellExitCode = (new ShellExitCodeCalculator)->calculate(
                 $configuration->failOnEmptyTestSuite(),
@@ -197,31 +189,20 @@ final class Application
         }
 
         printf(
-            '%s%sAn error occurred inside PHPUnit.%s%sMessage:  %s',
+            '%s%sAn error occurred inside PHPUnit.%s%sMessage:  %s%sLocation: %s:%d%s%s%s%s',
             PHP_EOL,
             PHP_EOL,
             PHP_EOL,
             PHP_EOL,
-            $message
+            $message,
+            PHP_EOL,
+            $t->getFile(),
+            $t->getLine(),
+            PHP_EOL,
+            PHP_EOL,
+            $t->getTraceAsString(),
+            PHP_EOL
         );
-
-        $first = true;
-
-        do {
-            printf(
-                '%s%s: %s:%d%s%s%s%s',
-                PHP_EOL,
-                $first ? 'Location' : 'Caused by',
-                $t->getFile(),
-                $t->getLine(),
-                PHP_EOL,
-                PHP_EOL,
-                $t->getTraceAsString(),
-                PHP_EOL
-            );
-
-            $first = false;
-        } while ($t = $t->getPrevious());
 
         exit(Result::CRASH);
     }
@@ -388,13 +369,13 @@ final class Application
         }
 
         if ($cliConfiguration->warmCoverageCache()) {
-            $this->execute(new WarmCodeCoverageCacheCommand($configuration, CodeCoverageFilterRegistry::instance()));
+            $this->execute(new WarmCodeCoverageCacheCommand($configuration));
         }
     }
 
     private function executeHelpCommandWhenThereIsNothingElseToDo(Configuration $configuration, TestSuite $testSuite): void
     {
-        if ($testSuite->isEmpty() && !$configuration->hasCliArgument() && $configuration->testSuite()->isEmpty()) {
+        if ($testSuite->isEmpty() && !$configuration->hasCliArgument() && !$configuration->hasDefaultTestSuite()) {
             $this->execute(new ShowHelpCommand(Result::FAILURE));
         }
     }
@@ -405,8 +386,8 @@ final class Application
 
         $runtime = 'PHP ' . PHP_VERSION;
 
-        if (CodeCoverage::instance()->isActive()) {
-            $runtime .= ' with ' . CodeCoverage::instance()->driver()->nameAndVersion();
+        if (CodeCoverage::isActive()) {
+            $runtime .= ' with ' . CodeCoverage::driver()->nameAndVersion();
         }
 
         $this->writeMessage($printer, 'Runtime', $runtime);

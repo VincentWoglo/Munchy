@@ -1,5 +1,5 @@
 <?php
-    abstract class login implements IloginValidator
+    abstract class login
     {
         private $emailInput;
         private $passwordInput;

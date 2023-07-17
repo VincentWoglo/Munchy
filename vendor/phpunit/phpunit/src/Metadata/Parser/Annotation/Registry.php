@@ -10,7 +10,6 @@
 namespace PHPUnit\Metadata\Annotation\Parser;
 
 use function array_key_exists;
-use PHPUnit\Metadata\AnnotationsAreNotSupportedForInternalClassesException;
 use PHPUnit\Metadata\ReflectionException;
 use ReflectionClass;
 use ReflectionMethod;
@@ -45,10 +44,9 @@ final class Registry
     }
 
     /**
-     * @psalm-param class-string $class
-     *
-     * @throws AnnotationsAreNotSupportedForInternalClassesException
      * @throws ReflectionException
+     *
+     * @psalm-param class-string $class
      */
     public function forClassName(string $class): DocBlock
     {
@@ -72,10 +70,9 @@ final class Registry
     }
 
     /**
-     * @psalm-param class-string $classInHierarchy
-     *
-     * @throws AnnotationsAreNotSupportedForInternalClassesException
      * @throws ReflectionException
+     *
+     * @psalm-param class-string $classInHierarchy
      */
     public function forMethod(string $classInHierarchy, string $method): DocBlock
     {

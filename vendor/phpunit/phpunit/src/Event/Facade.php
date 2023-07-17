@@ -100,7 +100,7 @@ final class Facade
 
     public static function seal(): void
     {
-        self::deferredDispatcher()->flush();
+        self::$deferringDispatcher->flush();
 
         self::$sealed = true;
 
@@ -214,7 +214,6 @@ final class Facade
             TestSuite\Filtered::class,
             TestSuite\Finished::class,
             TestSuite\Loaded::class,
-            TestSuite\Skipped::class,
             TestSuite\Sorted::class,
             TestSuite\Started::class,
         ];

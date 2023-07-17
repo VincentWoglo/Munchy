@@ -11,7 +11,6 @@ namespace PHPUnit\TestRunner\TestResult;
 
 use function assert;
 use function str_contains;
-use PHPUnit\Event\Code\TestMethod;
 use PHPUnit\Event\EventFacadeIsSealedException;
 use PHPUnit\Event\Facade;
 use PHPUnit\Event\Test\BeforeFirstTestMethodErrored;
@@ -29,17 +28,14 @@ use PHPUnit\Event\Test\PhpunitDeprecationTriggered;
 use PHPUnit\Event\Test\PhpunitErrorTriggered;
 use PHPUnit\Event\Test\PhpunitWarningTriggered;
 use PHPUnit\Event\Test\PhpWarningTriggered;
-use PHPUnit\Event\Test\Skipped as TestSkipped;
+use PHPUnit\Event\Test\Skipped;
 use PHPUnit\Event\Test\WarningTriggered;
-use PHPUnit\Event\TestData\NoDataSetFromDataProviderException;
 use PHPUnit\Event\TestRunner\DeprecationTriggered as TestRunnerDeprecationTriggered;
 use PHPUnit\Event\TestRunner\ExecutionStarted;
 use PHPUnit\Event\TestRunner\WarningTriggered as TestRunnerWarningTriggered;
 use PHPUnit\Event\TestSuite\Finished as TestSuiteFinished;
-use PHPUnit\Event\TestSuite\Skipped as TestSuiteSkipped;
 use PHPUnit\Event\TestSuite\Started as TestSuiteStarted;
 use PHPUnit\Event\TestSuite\TestSuiteForTestClass;
-use PHPUnit\Event\TestSuite\TestSuiteForTestMethodWithDataProvider;
 use PHPUnit\Event\UnknownSubscriberTypeException;
 
 /**
@@ -69,12 +65,7 @@ final class Collector
     private array $testMarkedIncompleteEvents = [];
 
     /**
-     * @psalm-var list<TestSuiteSkipped>
-     */
-    private array $testSuiteSkippedEvents = [];
-
-    /**
-     * @psalm-var list<TestSkipped>
+     * @psalm-var list<Skipped>
      */
     private array $testSkippedEvents = [];
 
@@ -151,7 +142,6 @@ final class Collector
     {
         Facade::registerSubscribers(
             new ExecutionStartedSubscriber($this),
-            new TestSuiteSkippedSubscriber($this),
             new TestSuiteStartedSubscriber($this),
             new TestSuiteFinishedSubscriber($this),
             new TestPreparedSubscriber($this),
@@ -186,7 +176,6 @@ final class Collector
             $this->testErroredEvents,
             $this->testFailedEvents,
             $this->testConsideredRiskyEvents,
-            $this->testSuiteSkippedEvents,
             $this->testSkippedEvents,
             $this->testMarkedIncompleteEvents,
             $this->testTriggeredDeprecationEvents,
@@ -247,17 +236,6 @@ final class Collector
         $this->numberOfTests = $event->testSuite()->count();
     }
 
-    public function testSuiteSkipped(TestSuiteSkipped $event): void
-    {
-        $testSuite = $event->testSuite();
-
-        if (!$testSuite->isForTestClass()) {
-            return;
-        }
-
-        $this->testSuiteSkippedEvents[] = $event;
-    }
-
     public function testSuiteStarted(TestSuiteStarted $event): void
     {
         $testSuite = $event->testSuite();
@@ -269,36 +247,19 @@ final class Collector
         $this->currentTestSuiteForTestClassFailed = false;
     }
 
-    /**
-     * @throws NoDataSetFromDataProviderException
-     */
     public function testSuiteFinished(TestSuiteFinished $event): void
     {
-        if ($this->currentTestSuiteForTestClassFailed) {
-            return;
-        }
-
         $testSuite = $event->testSuite();
 
-        if ($testSuite->isWithName()) {
-            return;
-        }
-
-        if ($testSuite->isForTestMethodWithDataProvider()) {
-            assert($testSuite instanceof TestSuiteForTestMethodWithDataProvider);
-
-            $test = $testSuite->tests()->asArray()[0];
-
-            assert($test instanceof TestMethod);
-
-            PassedTests::instance()->testMethodPassed($test, null);
-
+        if (!$testSuite->isForTestClass()) {
             return;
         }
 
         assert($testSuite instanceof TestSuiteForTestClass);
 
-        PassedTests::instance()->testClassPassed($testSuite->className());
+        if (!$this->currentTestSuiteForTestClassFailed) {
+            PassedTests::instance()->testClassPassed($testSuite->className());
+        }
     }
 
     public function testPrepared(): void
@@ -352,7 +313,7 @@ final class Collector
         $this->testMarkedIncompleteEvents[] = $event;
     }
 
-    public function testSkipped(TestSkipped $event): void
+    public function testSkipped(Skipped $event): void
     {
         $this->testSkippedEvents[] = $event;
 

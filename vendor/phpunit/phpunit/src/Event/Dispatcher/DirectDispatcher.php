@@ -10,10 +10,7 @@
 namespace PHPUnit\Event;
 
 use function array_key_exists;
-use function dirname;
 use function sprintf;
-use function str_starts_with;
-use Throwable;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -23,7 +20,7 @@ final class DirectDispatcher implements SubscribableDispatcher
     private readonly TypeMap $typeMap;
 
     /**
-     * @psalm-var array<class-string, list<Subscriber>>
+     * @psalm-var array<string, list<Subscriber>>
      */
     private array $subscribers = [];
 
@@ -67,22 +64,6 @@ final class DirectDispatcher implements SubscribableDispatcher
     }
 
     /**
-     * @psalm-param class-string $className
-     */
-    public function hasSubscriberFor(string $className): bool
-    {
-        if ($this->tracers !== []) {
-            return true;
-        }
-
-        if (isset($this->subscribers[$className])) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * @throws UnknownEventTypeException
      */
     public function dispatch(Event $event): void
@@ -99,11 +80,7 @@ final class DirectDispatcher implements SubscribableDispatcher
         }
 
         foreach ($this->tracers as $tracer) {
-            try {
-                $tracer->trace($event);
-            } catch (Throwable $t) {
-                $this->ignoreThrowablesFromThirdPartySubscribers($t);
-            }
+            $tracer->trace($event);
         }
 
         if (!array_key_exists($eventClassName, $this->subscribers)) {
@@ -111,21 +88,7 @@ final class DirectDispatcher implements SubscribableDispatcher
         }
 
         foreach ($this->subscribers[$eventClassName] as $subscriber) {
-            try {
-                $subscriber->notify($event);
-            } catch (Throwable $t) {
-                $this->ignoreThrowablesFromThirdPartySubscribers($t);
-            }
-        }
-    }
-
-    /**
-     * @throws Throwable
-     */
-    private function ignoreThrowablesFromThirdPartySubscribers(Throwable $t): void
-    {
-        if (str_starts_with($t->getFile(), dirname(__DIR__, 2))) {
-            throw $t;
+            $subscriber->notify($event);
         }
     }
 }

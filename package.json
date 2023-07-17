@@ -4,5 +4,8 @@
     "gulp-csso": "^4.0.1",
     "gulp-sass": "^5.1.0",
     "sass": "^1.57.1"
+  },
+  "dependencies": {
+    "validate.js": "^0.13.1"
   }
 }

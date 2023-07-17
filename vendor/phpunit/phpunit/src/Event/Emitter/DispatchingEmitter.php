@@ -14,7 +14,6 @@ use PHPUnit\Event\Code\Throwable;
 use PHPUnit\Event\TestSuite\Filtered as TestSuiteFiltered;
 use PHPUnit\Event\TestSuite\Finished as TestSuiteFinished;
 use PHPUnit\Event\TestSuite\Loaded as TestSuiteLoaded;
-use PHPUnit\Event\TestSuite\Skipped as TestSuiteSkipped;
 use PHPUnit\Event\TestSuite\Sorted as TestSuiteSorted;
 use PHPUnit\Event\TestSuite\Started as TestSuiteStarted;
 use PHPUnit\Event\TestSuite\TestSuite;
@@ -205,21 +204,6 @@ final class DispatchingEmitter implements Emitter
      * @throws InvalidArgumentException
      * @throws UnknownEventTypeException
      */
-    public function testSuiteSkipped(TestSuite $testSuite, string $message): void
-    {
-        $this->dispatcher->dispatch(
-            new TestSuiteSkipped(
-                $this->telemetryInfo(),
-                $testSuite,
-                $message
-            )
-        );
-    }
-
-    /**
-     * @throws InvalidArgumentException
-     * @throws UnknownEventTypeException
-     */
     public function testSuiteStarted(TestSuite $testSuite): void
     {
         $this->dispatcher->dispatch(
@@ -400,10 +384,6 @@ final class DispatchingEmitter implements Emitter
      */
     public function testAssertionSucceeded(mixed $value, Constraint\Constraint $constraint, string $message): void
     {
-        if (!$this->hasSubscriberFor(Test\AssertionSucceeded::class)) {
-            return;
-        }
-
         $this->dispatcher->dispatch(
             new Test\AssertionSucceeded(
                 $this->telemetryInfo(),
@@ -421,10 +401,6 @@ final class DispatchingEmitter implements Emitter
      */
     public function testAssertionFailed(mixed $value, Constraint\Constraint $constraint, string $message): void
     {
-        if (!$this->hasSubscriberFor(Test\AssertionFailed::class)) {
-            return;
-        }
-
         $this->dispatcher->dispatch(
             new Test\AssertionFailed(
                 $this->telemetryInfo(),
@@ -1055,17 +1031,5 @@ final class DispatchingEmitter implements Emitter
         $this->previousSnapshot = $current;
 
         return $info;
-    }
-
-    /**
-     * @psalm-param class-string $className
-     */
-    private function hasSubscriberFor(string $className): bool
-    {
-        if (!$this->dispatcher instanceof SubscribableDispatcher) {
-            return true;
-        }
-
-        return $this->dispatcher->hasSubscriberFor($className);
     }
 }

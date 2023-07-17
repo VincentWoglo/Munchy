@@ -184,7 +184,7 @@ final class TestBuilder
                 $backupStaticProperties = true;
             }
         } elseif ($metadataForClass->isBackupStaticProperties()->isNotEmpty()) {
-            $metadata = $metadataForClass->isBackupStaticProperties()->asArray()[0];
+            $metadata = $metadataForMethod->isBackupStaticProperties()->asArray()[0];
 
             assert($metadata instanceof BackupStaticProperties);
 

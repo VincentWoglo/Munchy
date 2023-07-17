@@ -2,115 +2,6 @@
 
 All notable changes of the PHPUnit 10.0 release series are documented in this file using the [Keep a CHANGELOG](https://keepachangelog.com/) principles.
 
-## [10.0.14] - 2023-03-01
-
-### Changed
-
-* The `PHPUnit\Event\Test\AssertionSucceeded` and `PHPUnit\Event\Test\AssertionFailed` events are no longer emitted when they have no subscribers
-* The `PHPUnit\Event\Test\AssertionSucceeded::value()` method is no longer deprecated and returns the exported value again
-
-## [10.0.13] - 2023-02-27
-
-### Fixed
-
-* [#5186](https://github.com/sebastianbergmann/phpunit/issues/5186): SBOM does not validate
-* [#5258](https://github.com/sebastianbergmann/phpunit/issues/5258): JUnit logger crashes when test is skipped by missing PHP extension when running in separate process
-
-## [10.0.12] - 2023-02-25
-
-### Changed
-
-* Values of other types than `array` may now be passed to `assertIsList()`
-
-### Fixed
-
-* [#5234](https://github.com/sebastianbergmann/phpunit/issues/5234): Constants defined in configuration file are not defined in bootstrap file when test is run in separate process
-* [#5251](https://github.com/sebastianbergmann/phpunit/pull/5251): Junit XML logger does not properly handle errors on unprepared tests
-
-## [10.0.11] - 2023-02-20
-
-### Fixed
-
-* [#5192](https://github.com/sebastianbergmann/phpunit/issues/5192): Running an empty test shows help screen
-* [#5224](https://github.com/sebastianbergmann/phpunit/issues/5224): PHPUnit looks "at the clock" and trusts `$_SERVER['REQUEST_TIME_FLOAT']`
-
-## [10.0.10] - 2023-02-20
-
-### Fixed
-
-* [#5218](https://github.com/sebastianbergmann/phpunit/issues/5218): Code Coverage does not work for tests run in separate process(es)
-* [#5219](https://github.com/sebastianbergmann/phpunit/issues/5219): Exceptions thrown in event subscribers affect how tests are run and/or how their outcome is evaluated
-
-## [10.0.9] - 2023-02-19
-
-### Fixed
-
-* Corrected the fix for [#5210](https://github.com/sebastianbergmann/phpunit/issues/5210)
-
-## [10.0.8] - 2023-02-18
-
-### Fixed
-
-* [#5210](https://github.com/sebastianbergmann/phpunit/issues/5210): Exceptions raised in `TestCase::tearDown()` are not handled correctly
-
-## [10.0.7] - 2023-02-08
-
-### Changed
-
-* The `PHPUnit\Event\Test\AssertionSucceeded::value()` method is now deprecated and always returns `''` (reverted in PHPUnit 10.0.14)
-
-### Fixed
-
-* [#5183](https://github.com/sebastianbergmann/phpunit/issues/5183): Values used in assertions are exported for `Test\AssertionSucceeded` events
-
-## [10.0.6] - 2023-02-08
-
-### Fixed
-
-* [#5178](https://github.com/sebastianbergmann/phpunit/issues/5178): Test depending on a test with data provider is always skipped
-
-## [10.0.5] - 2023-02-07
-
-### Fixed
-
-* [#5172](https://github.com/sebastianbergmann/phpunit/issues/5172): Test Runner does not display test runner warnings when TestDox result printer is used
-* [#5176](https://github.com/sebastianbergmann/phpunit/issues/5176): Silenced `E_DEPRECATED` errors are reported
-
-## [10.0.4] - 2023-02-05
-
-### Fixed
-
-* [#5169](https://github.com/sebastianbergmann/phpunit/issues/5169): Parameter type for constructor of `GreaterThan` and `LessThan` constraints does not match parameter type for `Assert::greaterThan()` and `Assert::lessThan()`
-* [#5171](https://github.com/sebastianbergmann/phpunit/issues/5171): `@backupStaticProperties` and `@backupStaticAttributes` trigger an error
-
-## [10.0.3] - 2023-02-04
-
-### Added
-
-* `PHPUnit\Event\TestSuite\Skipped` and `PHPUnit\Event\TestSuite\SkippedSubscriber` (required for the fixing [#5165](https://github.com/sebastianbergmann/phpunit/issues/5165))
-
-### Fixed
-
-* [#5165](https://github.com/sebastianbergmann/phpunit/issues/5165): `markTestSkipped()` not handled correctly when called in "before first test" method
-* [#5166](https://github.com/sebastianbergmann/phpunit/issues/5166): Error when generating TestDox output for risky test
-
-## [10.0.2] - 2023-02-04
-
-### Changed
-
-* The `PHPUnit\TextUI\Configuration\Configuration::loadPharExtensions()` method has been deprecated in favour of `PHPUnit\TextUI\Configuration\Configuration::noExtensions()`
-
-### Fixed
-
-* [#5073](https://github.com/sebastianbergmann/phpunit/issues/5073): `--no-extensions` CLI option only prevents extension PHARs from being loaded
-* `assertNotCount()`, `assertEmpty()`, `assertNotEmpty()`, `assertSameSize()`, and `assertNotSameSize()` now reject `Generator` arguments just as `assertCount()` does
-
-## [10.0.1] - 2023-02-03
-
-### Fixed
-
-* [#5157](https://github.com/sebastianbergmann/phpunit/issues/5157): Test Runner tries to run hook methods for `TestSuite` objects that do not collect `TestCase` objects
-
 ## [10.0.0] - 2023-02-03
 
 ### Added
@@ -146,7 +37,6 @@ All notable changes of the PHPUnit 10.0 release series are documented in this fi
 * [#4599](https://github.com/sebastianbergmann/phpunit/issues/4599): Unify cache configuration
 * [#4603](https://github.com/sebastianbergmann/phpunit/issues/4603): Use "property" instead of "attribute" for configuring the backup of static fields
 * [#4656](https://github.com/sebastianbergmann/phpunit/issues/4656): Prevent doubling of `__destruct()`
-* Expectations configured on test stubs created using `PHPUnit\Framework\TestCase::createStub()` are no longer evaluated, you need to create a mock object using `PHPUnit\Framework\TestCase::createMock()` instead
 * Using a non-static method as a data provider is now deprecated 
 * Using a non-public method as a data provider is now deprecated
 * Declaring a data provider method to require an argument is now deprecated
@@ -162,7 +52,6 @@ All notable changes of the PHPUnit 10.0 release series are documented in this fi
 * The `forceCoversAnnotation` attribute of the `<phpunit>` element of PHPUnit's XML configuration file has been renamed to `requireCoverageMetadata`
 * The `beStrictAboutCoversAnnotation` attribute of the `<phpunit>` element of PHPUnit's XML configuration file has been renamed to `beStrictAboutCoverageMetadata`
 * The public methods of `PHPUnit\Framework\Assert` and `PHPUnit\Framework\TestCase` are now `final`
-* The `PHPUnit\Framework\TestCase::onNotSuccessfulTest()` method can no longer manipulate the outcome of a test
 * The `--testdox` CLI option no longer replaces the default progress output, but only the default result output
 * The CLI test runner now only stops after a test errored when `--stop-on-error` or `--stop-on-defect` is used
 * The CLI test runner now only stops after a test failed when `--stop-on-failure` or `--stop-on-defect` is used
@@ -233,20 +122,5 @@ All notable changes of the PHPUnit 10.0 release series are documented in this fi
 * Removed the `<text>` XML configuration element (child of `<logging>`)
 * The CLI test runner can no longer be extended through inheritance, the `PHPUnit\TextUI\Command` class has been removed
 * PHP 7.3, PHP 7.4, and PHP 8.0 are no longer supported
-* `phpunit/php-code-coverage` [no longer supports PHPDBG and Xdebug 2](https://github.com/sebastianbergmann/php-code-coverage/blob/10.0.0/ChangeLog.md#1000---2023-02-03)
 
-[10.0.14]: https://github.com/sebastianbergmann/phpunit/compare/10.0.13...10.0.14
-[10.0.13]: https://github.com/sebastianbergmann/phpunit/compare/10.0.12...10.0.13
-[10.0.12]: https://github.com/sebastianbergmann/phpunit/compare/10.0.11...10.0.12
-[10.0.11]: https://github.com/sebastianbergmann/phpunit/compare/10.0.10...10.0.11
-[10.0.10]: https://github.com/sebastianbergmann/phpunit/compare/10.0.9...10.0.10
-[10.0.9]: https://github.com/sebastianbergmann/phpunit/compare/10.0.8...10.0.9
-[10.0.8]: https://github.com/sebastianbergmann/phpunit/compare/10.0.7...10.0.8
-[10.0.7]: https://github.com/sebastianbergmann/phpunit/compare/10.0.6...10.0.7
-[10.0.6]: https://github.com/sebastianbergmann/phpunit/compare/10.0.5...10.0.6
-[10.0.5]: https://github.com/sebastianbergmann/phpunit/compare/10.0.4...10.0.5
-[10.0.4]: https://github.com/sebastianbergmann/phpunit/compare/10.0.3...10.0.4
-[10.0.3]: https://github.com/sebastianbergmann/phpunit/compare/10.0.2...10.0.3
-[10.0.2]: https://github.com/sebastianbergmann/phpunit/compare/10.0.1...10.0.2
-[10.0.1]: https://github.com/sebastianbergmann/phpunit/compare/10.0.0...10.0.1
 [10.0.0]: https://github.com/sebastianbergmann/phpunit/compare/9.6...10.0.0

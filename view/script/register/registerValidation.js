@@ -1,47 +1,45 @@
-import { isValidEmail, getErrorStyle, getErrorMessage } from './validation.js';
 
-const USERNAME_INPUT = document.getElementById('usernameInput')
-const EMAIL_INPUT = document.getElementById('emailInput');
-const PASSWORD_INPUT = document.getElementById('passwordInput');
-const RE_PASSWORD_INPUT = document.getElementById('re-passwordInput');
-const REGISTER_SUBMIT_BUTTON = document.getElementById('registerSubmitButton');
 
-let validateEmail = ()=>{
-    let emailParams = {
-        isValidEmail:  false,
-        emailInput: EMAIL_INPUT,
-        emailInputValue: EMAIL_INPUT.value,
-        emailMinLength: 12,
+
+let constraints = {
+  creditCardNumber: {
+    presence: true,
+    format: {
+      pattern: /^(34|37|4|5[1-5]).*$/,
+      message: function(value, attribute, validatorOptions, attributes, globalOptions) {
+        return validate.format("^%{num} is not a valid credit card number", {
+          num: value
+        });
+      }
+    },
+    length: function(value, attributes, attributeName, options, constraints) {
+      if (value) {
+        // Amex
+        if ((/^(34|37).*$/).test(value)) return {is: 15};
+        // Visa, Mastercard
+        if ((/^(4|5[1-5]).*$/).test(value)) return {is: 16};
+      }
+      // Unknown card, don't validate length
+      return false;
     }
+  },
+  creditCardZip: function(value, attributes, attributeName, options, constraints) {
+    if (!(/^(34|37).*$/).test(attributes.creditCardNumber)) return null;
+    return {
+      presence: {message: "is required when using AMEX"},
+      length: {is: 5}
+    };
+  }
+};
 
-    let emailErrors = isValidEmail(emailParams)
+validate({creditCardNumber: "4"}, constraints);
+// => {"creditCardNumber": ["Credit card number is the wrong length (should be 16 characters)"]}
 
-    if(emailErrors.containAtSymbol.type == false)
-    {
-        getErrorStyle(EMAIL_INPUT, 'red', '#f4c2c2');
+validate({creditCardNumber: "9999999999999999"}, constraints);
+// => {"creditCardNumber": ["9999999999999999 is not a valid credit card number"]}
 
-        getErrorMessage(EMAIL_CONTAIN_AT_SYMBOL_ERROR, 'block', emailErrors.containAtSymbol.message);
-    }
-    else
-    {
-        getErrorStyle(EMAIL_INPUT, '#cccccc', 'white')
+validate({creditCardNumber: "4242424242424242"}, constraints);
+// => undefined
 
-        EMAIL_CONTAIN_AT_SYMBOL_ERROR.style.display = 'none'
-    }
-
-    if(emailErrors.containsCapitalLetter.type == false)
-    {
-        getErrorStyle(EMAIL_INPUT, 'red', '#f4c2c2');
-
-        getErrorMessage(CONTAINS_CAPITAL_LETTER_ERROR, 'block', emailErrors.containsCapitalLetter.message);
-    }
-    else
-    {
-        getErrorStyle(EMAIL_INPUT, '#cccccc', 'white')
-
-        CONTAINS_CAPITAL_LETTER_ERROR.style.display = 'none'
-    }
-    console.log('dfjk')
-}
-validateEmail()
-export { validateEmail };
+validate({creditCardNumber: "340000000000000"}, constraints);
+// => {"creditCardZip": ["Credit card zip is required when using AMEX"]}
