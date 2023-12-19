@@ -54,12 +54,13 @@
             </section>
         </main>
     </div>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/validate.js/0.13.1/validate.min.js"></script>
+    <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/validate.js/0.13.1/validate.min.js"></script> -->
     {% for scriptModule in javascriptModule %}
         <script type="module" src="{{ scriptModule }}"></script>
     {% endfor %}
     {% for script in javascript %}
         <script src="{{ script }}"></script>
+        script
     {% endfor %}
     
 </body>
