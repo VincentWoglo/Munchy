@@ -8,12 +8,16 @@
     <title>Munchy - Home</title>
 </head>
 <body>
-    {% block dashboard_navigation %}
-        {% include '_navigation.html' %}
-    {% endblock %}
-    <div class="navigation_menu">
-        <div class="container">
-            <div class="div"></div>
+    <div class="navigation_menu ">
+        <div class="container page_contained">
+            {% block dashboard_navigation %}
+                {% include '_navigation.html' %}
+            {% endblock %}
+            <div class="dashboard_main">
+                {% block dashboard_menuBar %}
+                    {% include '_menuBar.html' %}
+                {% endblock %}
+            </div>
         </div>
     </div>
 </body>

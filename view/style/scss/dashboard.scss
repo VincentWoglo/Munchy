@@ -104,3 +104,42 @@ body{
         }
     }
 }
+
+.page_contained {
+    display: flex;
+    flex-direction: row;
+}
+.dashboard_main {
+    position: absolute;
+    left: 20%;
+    // border: 1px red solid;
+    width: 100%;
+    max-width: 1160px;
+    margin-top: 19px;
+}
+
+.menu_bar {
+    width: 100%;
+    border: 1px #191919 solid;
+    padding: 14px;
+    border-radius: 8px;
+}
+
+.language_option select {
+    border: none;
+    font-size: fonts.$font-size-14;
+    border-radius: 0;
+}
+.nav_menu_right, .nav_menu_contained {
+    display: flex;
+    align-items: center;
+}
+.nav_menu_contained {
+    justify-content: space-between;
+    div:not(:first-child) {
+        margin-left: 20px;
+    }
+    div img {
+        cursor: pointer;
+    }
+}
