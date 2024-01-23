@@ -8,7 +8,8 @@
 
         
         function dump(){
-            self::SendToView('login');
+
+            self::view('login');
         }
     }
 ?>

@@ -7,7 +7,7 @@
 
 
         public function register(){
-            self::SendToView('register');
+            self::view('register');
         }
     }
 ?>

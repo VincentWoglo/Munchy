@@ -8,7 +8,7 @@
 
         
         function dump(){
-            self::SendToView('index');
+            self::view('index');
         }
     }
 ?>

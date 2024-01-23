@@ -1,5 +1,6 @@
 <?php
     use munchy\router\loader;
+    use munchy\controller\controller;
     use Phroute\Phroute\RouteCollector;
     use munchy\controller\loginController;
 
@@ -10,27 +11,27 @@
     });
 
     $router->get('/index/', function(){
-        loader::controller('indexController@dump', [1,234,45]);
+        controller::controller('indexController@dump', [1,234,45]);
     });
     $router->post('/index/', function(){});
 
     $router->get('/login/', function()
     {
-        loader::controller('loginController@dump', [1,234,45]);
+        controller::controller('loginController@dump', [1,234,45]);
     });
 
     $router->post('/login/', function()
     {
-        loader::controller('loginController@dump', [1,234,45]);
+        controller::controller('loginController@dump', [1,234,45]);
     });
 
     $router->get('/register/', function()
     {
-        loader::controller('registerController@register', [1,234,45]);
+        controller::controller('registerController@register', [1,234,45]);
     });
     $router->post('/register/', function()
     {
-        loader::controller('registerController@register', [1,234,45]);
+        controller::controller('registerController@register', [1,234,45]);
     });
 
     $router->get('/home/', function()
