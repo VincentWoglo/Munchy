@@ -2,9 +2,11 @@
 
 namespace munchy\database;
 
+use pdo;
+
 // No need to use 'use PDO;' since it's a core PHP class
 
-// require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '../../config/config.php';
 
 class databaseConnection 
 {
@@ -16,18 +18,19 @@ class databaseConnection
 
     public function __construct()
     {
-        $this->hostname = "127.0.0.1";
-        $this->password = "";
-        $this->username = "root";
-        $this->databaseName = "munchy";
+        $this->hostname = DATABASE_HOSTNAME;
+        $this->password = DATABASE_PASSWORD;
+        $this->username = DATABASE_USERNAME;
+        $this->databaseName = DATABASE_NAME;
     }
+
 
     public function connectDatabase()
     {
         try
         {
-            $this->databaseConnection = new \PDO("mysql:host=$this->hostname;dbname=$this->databaseName", $this->username, $this->password);
-            $this->databaseConnection->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            $this->databaseConnection = new PDO("mysql:host=$this->hostname; port=3309; dbname=$this->databaseName", $this->username, $this->password);
+            $this->databaseConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
             return $this->databaseConnection;
         }

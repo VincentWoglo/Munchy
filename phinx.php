@@ -1,8 +1,8 @@
 <?php
     include __DIR__."/vendor/autoload.php";
-    use SaverBugTracker\Model\Connection;
-    $Connection = new Connection;
-    $Connection->Connect();
+    use munchy\database\databaseConnection;
+    $databaseConnection = new databaseConnection;
+    $Connection->connectDatabase();
     //May have to load the connection class in the model and manually run it here
     
     $dotenv = Dotenv\Dotenv::createImmutable(__DIR__."/Model", ".env.Connection");
@@ -20,7 +20,7 @@
                 'name' => 'production_db',
                 'user' => 'root',
                 'pass' => '',
-                'port' => '3306',
+                'port' => '3309',
                 'charset' => 'utf8',
             ],
             'development' => [

@@ -1,10 +1,8 @@
 <?php
-    $config = [
-        'database' => [
-            'hostname' => 'localhost',
-            'username' => 'root',
-            'password' => '',
-            'databaseName' => 'munchy'
-        ]
-    ];
+    define("DATABASE_HOSTNAME", "localhost");
+    define("DATABASE_USERNAME", "root");
+    define("DATABASE_PASSWORD", "");
+    define("DATABASE_NAME", "munchy");
+
+
 ?>
