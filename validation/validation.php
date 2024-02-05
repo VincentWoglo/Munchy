@@ -1,12 +1,22 @@
 <?php
     namespace munchy\validation;
 
-    class validation{
+    abstract class validation {
+        public function __construct() {
+            
+        }
+
+
         /**
-         * @param int $minChars
+         * check if the string of the user is at least the minimum character
+         * Returns a false if the length is not min length
+         * 
          * @return bool
          */
-        public function isMinLength(int $minChars){}
+        public function isMinLength($userPassword, $minChars): bool
+        {
+            return count($userPassword) >= $minChars;
+        }
 
 
         /**
@@ -15,7 +25,11 @@
          * 
          * @return bool
          */
-        public function containsAtSymbol(){}
+        public function containsAtSymbol($userInput) : bool
+        {
+            return str_contains($userInput, '@');
+        }
+
 
         /**
          * Check if the user is using a valid email client
@@ -31,7 +45,10 @@
          * 
          * @return bool
          */
-        public function containsNumbers(){}
+        public function containsInteger($userInput) : bool
+        {
+            return preg_match('/\d/', $userInput) === 1;
+        }
 
 
         /**
