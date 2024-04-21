@@ -18,6 +18,8 @@
          /**
          * Checks if the file being loaded exist and returns false if not
          * 
+         * @access public
+         * @static
          * @param string $directory
          * @param string $fileName
          */

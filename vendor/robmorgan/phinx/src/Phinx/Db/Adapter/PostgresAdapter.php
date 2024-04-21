@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * MIT License
@@ -24,11 +25,16 @@ class PostgresAdapter extends PdoAdapter
 {
     public const GENERATED_ALWAYS = 'ALWAYS';
     public const GENERATED_BY_DEFAULT = 'BY DEFAULT';
+    /**
+     * Allow insert when a column was created with the GENERATED ALWAYS clause.
+     * This is required for seeding the database.
+     */
+    public const OVERRIDE_SYSTEM_VALUE = 'OVERRIDING SYSTEM VALUE';
 
     /**
      * @var string[]
      */
-    protected static $specificColumnTypes = [
+    protected static array $specificColumnTypes = [
         self::PHINX_TYPE_JSON,
         self::PHINX_TYPE_JSONB,
         self::PHINX_TYPE_CIDR,
@@ -45,14 +51,25 @@ class PostgresAdapter extends PdoAdapter
      *
      * @var \Phinx\Db\Table\Column[]
      */
-    protected $columnsWithComments = [];
+    protected array $columnsWithComments = [];
 
     /**
      * Use identity columns if available (Postgres >= 10.0)
      *
      * @var bool
      */
-    protected $useIdentity;
+    protected bool $useIdentity;
+
+    /**
+     * {@inheritDoc}
+     */
+    public function setConnection(PDO $connection): AdapterInterface
+    {
+        // always set here since connect() isn't always called
+        $this->useIdentity = (float)$connection->getAttribute(PDO::ATTR_SERVER_VERSION) >= 10;
+
+        return parent::setConnection($connection);
+    }
 
     /**
      * {@inheritDoc}
@@ -108,8 +125,6 @@ class PostgresAdapter extends PdoAdapter
                     $exception
                 );
             }
-
-            $this->useIdentity = (float)$db->getAttribute(PDO::ATTR_SERVER_VERSION) >= 10;
 
             $this->setConnection($db);
         }
@@ -475,13 +490,7 @@ class PostgresAdapter extends PdoAdapter
 
             if (in_array($columnType, [static::PHINX_TYPE_TIME, static::PHINX_TYPE_DATETIME], true)) {
                 $column->setPrecision($columnInfo['datetime_precision']);
-            } elseif (
-                !in_array($columnType, [
-                    self::PHINX_TYPE_SMALL_INTEGER,
-                    self::PHINX_TYPE_INTEGER,
-                    self::PHINX_TYPE_BIG_INTEGER,
-                ], true)
-            ) {
+            } elseif ($columnType === self::PHINX_TYPE_DECIMAL) {
                 $column->setPrecision($columnInfo['numeric_precision']);
             }
             $columns[] = $column;
@@ -716,7 +725,7 @@ class PostgresAdapter extends PdoAdapter
      * @param string $tableName Table name
      * @return array
      */
-    protected function getIndexes($tableName)
+    protected function getIndexes(string $tableName): array
     {
         $parts = $this->getSchemaName($tableName);
 
@@ -760,7 +769,7 @@ class PostgresAdapter extends PdoAdapter
     /**
      * @inheritDoc
      */
-    public function hasIndex(string $tableName, $columns): bool
+    public function hasIndex(string $tableName, string|array $columns): bool
     {
         if (is_string($columns)) {
             $columns = [$columns];
@@ -859,14 +868,9 @@ class PostgresAdapter extends PdoAdapter
 
         if ($constraint) {
             return $primaryKey['constraint'] === $constraint;
-        } else {
-            if (is_string($columns)) {
-                $columns = [$columns]; // str to array
-            }
-            $missingColumns = array_diff($columns, $primaryKey['columns']);
-
-            return empty($missingColumns);
         }
+
+        return $primaryKey['columns'] === (array)$columns;
     }
 
     /**
@@ -909,9 +913,6 @@ class PostgresAdapter extends PdoAdapter
      */
     public function hasForeignKey(string $tableName, $columns, ?string $constraint = null): bool
     {
-        if (is_string($columns)) {
-            $columns = [$columns]; // str to array
-        }
         $foreignKeys = $this->getForeignKeys($tableName);
         if ($constraint) {
             if (isset($foreignKeys[$constraint])) {
@@ -921,9 +922,12 @@ class PostgresAdapter extends PdoAdapter
             return false;
         }
 
+        if (is_string($columns)) {
+            $columns = [$columns];
+        }
+
         foreach ($foreignKeys as $key) {
-            $a = array_diff($columns, $key['columns']);
-            if (empty($a)) {
+            if ($key['columns'] === $columns) {
                 return true;
             }
         }
@@ -952,7 +956,7 @@ class PostgresAdapter extends PdoAdapter
                     JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name
                     JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name
                 WHERE constraint_type = 'FOREIGN KEY' AND tc.table_schema = %s AND tc.table_name = %s
-                ORDER BY kcu.position_in_unique_constraint",
+                ORDER BY kcu.ordinal_position",
             $this->getConnection()->quote($parts['schema']),
             $this->getConnection()->quote($parts['table'])
         ));
@@ -961,6 +965,10 @@ class PostgresAdapter extends PdoAdapter
             $foreignKeys[$row['constraint_name']]['columns'][] = $row['column_name'];
             $foreignKeys[$row['constraint_name']]['referenced_table'] = $row['referenced_table_name'];
             $foreignKeys[$row['constraint_name']]['referenced_columns'][] = $row['referenced_column_name'];
+        }
+        foreach ($foreignKeys as $name => $key) {
+            $foreignKeys[$name]['columns'] = array_values(array_unique($key['columns']));
+            $foreignKeys[$name]['referenced_columns'] = array_values(array_unique($key['referenced_columns']));
         }
 
         return $foreignKeys;
@@ -999,37 +1007,25 @@ class PostgresAdapter extends PdoAdapter
     {
         $instructions = new AlterInstructions();
 
-        $parts = $this->getSchemaName($tableName);
-        $sql = 'SELECT c.CONSTRAINT_NAME
-                FROM (
-                    SELECT CONSTRAINT_NAME, array_agg(COLUMN_NAME::varchar) as columns
-                    FROM information_schema.KEY_COLUMN_USAGE
-                    WHERE TABLE_SCHEMA = %s
-                    AND TABLE_NAME IS NOT NULL
-                    AND TABLE_NAME = %s
-                    AND POSITION_IN_UNIQUE_CONSTRAINT IS NOT NULL
-                    GROUP BY CONSTRAINT_NAME
-                ) c
-                WHERE
-                    ARRAY[%s]::varchar[] <@ c.columns AND
-                    ARRAY[%s]::varchar[] @> c.columns';
-
-        $array = [];
-        foreach ($columns as $col) {
-            $array[] = "'$col'";
+        $matches = [];
+        $foreignKeys = $this->getForeignKeys($tableName);
+        foreach ($foreignKeys as $name => $key) {
+            if ($key['columns'] === $columns) {
+                $matches[] = $name;
+            }
         }
 
-        $rows = $this->fetchAll(sprintf(
-            $sql,
-            $this->getConnection()->quote($parts['schema']),
-            $this->getConnection()->quote($parts['table']),
-            implode(',', $array),
-            implode(',', $array)
-        ));
+        if (empty($matches)) {
+            throw new InvalidArgumentException(sprintf(
+                'No foreign key on column(s) `%s` exists',
+                implode(', ', $columns)
+            ));
+        }
 
-        foreach ($rows as $row) {
-            $newInstr = $this->getDropForeignKeyInstructions($tableName, $row['constraint_name']);
-            $instructions->merge($newInstr);
+        foreach ($matches as $name) {
+            $instructions->merge(
+                $this->getDropForeignKeyInstructions($tableName, $name)
+            );
         }
 
         return $instructions;
@@ -1040,8 +1036,9 @@ class PostgresAdapter extends PdoAdapter
      *
      * @throws \Phinx\Db\Adapter\UnsupportedColumnTypeException
      */
-    public function getSqlType($type, ?int $limit = null): array
+    public function getSqlType(Literal|string $type, ?int $limit = null): array
     {
+        $type = (string)$type;
         switch ($type) {
             case static::PHINX_TYPE_TEXT:
             case static::PHINX_TYPE_TIME:
@@ -1514,7 +1511,7 @@ class PostgresAdapter extends PdoAdapter
      * @param string|\Phinx\Util\Literal $columnType Column type
      * @return bool
      */
-    protected function isArrayType($columnType): bool
+    protected function isArrayType(string|Literal $columnType): bool
     {
         if (!preg_match('/^([a-z]+)(?:\[\]){1,}$/', $columnType, $matches)) {
             return false;
@@ -1558,7 +1555,7 @@ class PostgresAdapter extends PdoAdapter
     /**
      * @inheritDoc
      */
-    public function castToBool($value)
+    public function castToBool($value): mixed
     {
         return (bool)$value ? 'TRUE' : 'FALSE';
     }
@@ -1568,6 +1565,10 @@ class PostgresAdapter extends PdoAdapter
      */
     public function getDecoratedConnection(): Connection
     {
+        if (isset($this->decoratedConnection)) {
+            return $this->decoratedConnection;
+        }
+
         $options = $this->getOptions();
         $options = [
             'username' => $options['user'] ?? null,
@@ -1576,11 +1577,7 @@ class PostgresAdapter extends PdoAdapter
             'quoteIdentifiers' => true,
         ] + $options;
 
-        $driver = new PostgresDriver($options);
-
-        $driver->setConnection($this->connection);
-
-        return new Connection(['driver' => $driver] + $options);
+        return $this->decoratedConnection = $this->buildConnection(PostgresDriver::class, $options);
     }
 
     /**
@@ -1596,5 +1593,86 @@ class PostgresAdapter extends PdoAdapter
                 $this->quoteSchemaName($this->getGlobalSchemaName())
             )
         );
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function insert(Table $table, array $row): void
+    {
+        $sql = sprintf(
+            'INSERT INTO %s ',
+            $this->quoteTableName($table->getName())
+        );
+        $columns = array_keys($row);
+        $sql .= '(' . implode(', ', array_map([$this, 'quoteColumnName'], $columns)) . ')';
+
+        foreach ($row as $column => $value) {
+            if (is_bool($value)) {
+                $row[$column] = $this->castToBool($value);
+            }
+        }
+
+        $override = '';
+        if ($this->useIdentity) {
+            $override = self::OVERRIDE_SYSTEM_VALUE . ' ';
+        }
+
+        if ($this->isDryRunEnabled()) {
+            $sql .= ' ' . $override . 'VALUES (' . implode(', ', array_map([$this, 'quoteValue'], $row)) . ');';
+            $this->output->writeln($sql);
+        } else {
+            $sql .= ' ' . $override . 'VALUES (' . implode(', ', array_fill(0, count($columns), '?')) . ')';
+            $stmt = $this->getConnection()->prepare($sql);
+            $stmt->execute(array_values($row));
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function bulkinsert(Table $table, array $rows): void
+    {
+        $sql = sprintf(
+            'INSERT INTO %s ',
+            $this->quoteTableName($table->getName())
+        );
+        $current = current($rows);
+        $keys = array_keys($current);
+
+        $override = '';
+        if ($this->useIdentity) {
+            $override = self::OVERRIDE_SYSTEM_VALUE . ' ';
+        }
+
+        $sql .= '(' . implode(', ', array_map([$this, 'quoteColumnName'], $keys)) . ') ' . $override . 'VALUES ';
+
+        if ($this->isDryRunEnabled()) {
+            $values = array_map(function ($row) {
+                return '(' . implode(', ', array_map([$this, 'quoteValue'], $row)) . ')';
+            }, $rows);
+            $sql .= implode(', ', $values) . ';';
+            $this->output->writeln($sql);
+        } else {
+            $count_keys = count($keys);
+            $query = '(' . implode(', ', array_fill(0, $count_keys, '?')) . ')';
+            $count_vars = count($rows);
+            $queries = array_fill(0, $count_vars, $query);
+            $sql .= implode(',', $queries);
+            $stmt = $this->getConnection()->prepare($sql);
+            $vals = [];
+
+            foreach ($rows as $row) {
+                foreach ($row as $v) {
+                    if (is_bool($v)) {
+                        $vals[] = $this->castToBool($v);
+                    } else {
+                        $vals[] = $v;
+                    }
+                }
+            }
+
+            $stmt->execute($vals);
+        }
     }
 }

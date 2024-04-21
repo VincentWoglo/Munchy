@@ -4,7 +4,7 @@
     class dashboardHomeController extends controller
     {
         public function home(){
-            self::sendToView('dashboard');
+            self::view('dashboard');
         }
     }
 ?>

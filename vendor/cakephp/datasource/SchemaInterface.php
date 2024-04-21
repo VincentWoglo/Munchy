@@ -56,7 +56,7 @@ interface SchemaInterface
      * @param array<string, mixed>|string $attrs The attributes for the column or the type name.
      * @return $this
      */
-    public function addColumn(string $name, $attrs);
+    public function addColumn(string $name, array|string $attrs);
 
     /**
      * Get column data in the table.
@@ -88,6 +88,7 @@ interface SchemaInterface
      * Get the column names in the table.
      *
      * @return array<string>
+     * @psalm-return list<string>
      */
     public function columns(): array;
 
@@ -100,7 +101,7 @@ interface SchemaInterface
     public function getColumnType(string $name): ?string;
 
     /**
-     * Sets the type of a column.
+     * Sets the type of column.
      *
      * @param string $name The column to set the type of.
      * @param string $type The type to set the column to.

@@ -67,42 +67,42 @@ class RulesChecker
      *
      * @var array<\Cake\Datasource\RuleInvoker>
      */
-    protected $_rules = [];
+    protected array $_rules = [];
 
     /**
      * The list of rules to check during create operations
      *
      * @var array<\Cake\Datasource\RuleInvoker>
      */
-    protected $_createRules = [];
+    protected array $_createRules = [];
 
     /**
      * The list of rules to check during update operations
      *
      * @var array<\Cake\Datasource\RuleInvoker>
      */
-    protected $_updateRules = [];
+    protected array $_updateRules = [];
 
     /**
      * The list of rules to check during delete operations
      *
      * @var array<\Cake\Datasource\RuleInvoker>
      */
-    protected $_deleteRules = [];
+    protected array $_deleteRules = [];
 
     /**
      * List of options to pass to every callable rule
      *
      * @var array
      */
-    protected $_options = [];
+    protected array $_options = [];
 
     /**
      * Whether to use I18n functions for translating default error messages
      *
      * @var bool
      */
-    protected $_useI18n = false;
+    protected bool $_useI18n = false;
 
     /**
      * Constructor. Takes the options to be passed to all rules.
@@ -112,7 +112,7 @@ class RulesChecker
     public function __construct(array $options = [])
     {
         $this->_options = $options;
-        $this->_useI18n = function_exists('__d');
+        $this->_useI18n = function_exists('\Cake\I18n\__d');
     }
 
     /**
@@ -134,7 +134,7 @@ class RulesChecker
      * second argument.
      * @return $this
      */
-    public function add(callable $rule, $name = null, array $options = [])
+    public function add(callable $rule, array|string|null $name = null, array $options = [])
     {
         $this->_rules[] = $this->_addError($rule, $name, $options);
 
@@ -159,7 +159,7 @@ class RulesChecker
      * second argument.
      * @return $this
      */
-    public function addCreate(callable $rule, $name = null, array $options = [])
+    public function addCreate(callable $rule, array|string|null $name = null, array $options = [])
     {
         $this->_createRules[] = $this->_addError($rule, $name, $options);
 
@@ -184,7 +184,7 @@ class RulesChecker
      * second argument.
      * @return $this
      */
-    public function addUpdate(callable $rule, $name = null, array $options = [])
+    public function addUpdate(callable $rule, array|string|null $name = null, array $options = [])
     {
         $this->_updateRules[] = $this->_addError($rule, $name, $options);
 
@@ -209,7 +209,7 @@ class RulesChecker
      * second argument.
      * @return $this
      */
-    public function addDelete(callable $rule, $name = null, array $options = [])
+    public function addDelete(callable $rule, array|string|null $name = null, array $options = [])
     {
         $this->_deleteRules[] = $this->_addError($rule, $name, $options);
 
@@ -307,12 +307,12 @@ class RulesChecker
      * Utility method for decorating any callable so that if it returns false, the correct
      * property in the entity is marked as invalid.
      *
-     * @param callable|\Cake\Datasource\RuleInvoker $rule The rule to decorate
+     * @param \Cake\Datasource\RuleInvoker|callable $rule The rule to decorate
      * @param array|string|null $name The alias for a rule or an array of options
      * @param array<string, mixed> $options The options containing the error message and field.
      * @return \Cake\Datasource\RuleInvoker
      */
-    protected function _addError(callable $rule, $name = null, array $options = []): RuleInvoker
+    protected function _addError(callable $rule, array|string|null $name = null, array $options = []): RuleInvoker
     {
         if (is_array($name)) {
             $options = $name;

@@ -38,49 +38,49 @@ class TableSchema implements TableSchemaInterface, SqlGeneratorInterface
      *
      * @var string
      */
-    protected $_table;
+    protected string $_table;
 
     /**
      * Columns in the table.
      *
      * @var array<string, array>
      */
-    protected $_columns = [];
+    protected array $_columns = [];
 
     /**
      * A map with columns to types
      *
      * @var array<string, string>
      */
-    protected $_typeMap = [];
+    protected array $_typeMap = [];
 
     /**
      * Indexes in the table.
      *
      * @var array<string, array>
      */
-    protected $_indexes = [];
+    protected array $_indexes = [];
 
     /**
      * Constraints in the table.
      *
      * @var array<string, array<string, mixed>>
      */
-    protected $_constraints = [];
+    protected array $_constraints = [];
 
     /**
      * Options for the table.
      *
      * @var array<string, mixed>
      */
-    protected $_options = [];
+    protected array $_options = [];
 
     /**
      * Whether the table is temporary
      *
      * @var bool
      */
-    protected $_temporary = false;
+    protected bool $_temporary = false;
 
     /**
      * Column length when using a `tiny` column type
@@ -108,7 +108,7 @@ class TableSchema implements TableSchemaInterface, SqlGeneratorInterface
      *
      * @var array<string, int>
      */
-    public static $columnLengths = [
+    public static array $columnLengths = [
         'tiny' => self::LENGTH_TINY,
         'medium' => self::LENGTH_MEDIUM,
         'long' => self::LENGTH_LONG,
@@ -120,7 +120,7 @@ class TableSchema implements TableSchemaInterface, SqlGeneratorInterface
      *
      * @var array<string, mixed>
      */
-    protected static $_columnKeys = [
+    protected static array $_columnKeys = [
         'type' => null,
         'baseType' => null,
         'length' => null,
@@ -135,7 +135,7 @@ class TableSchema implements TableSchemaInterface, SqlGeneratorInterface
      *
      * @var array<string, array<string, mixed>>
      */
-    protected static $_columnExtras = [
+    protected static array $_columnExtras = [
         'string' => [
             'collate' => null,
         ],
@@ -147,9 +147,11 @@ class TableSchema implements TableSchemaInterface, SqlGeneratorInterface
         ],
         'tinyinteger' => [
             'unsigned' => null,
+            'autoIncrement' => null,
         ],
         'smallinteger' => [
             'unsigned' => null,
+            'autoIncrement' => null,
         ],
         'integer' => [
             'unsigned' => null,
@@ -173,7 +175,7 @@ class TableSchema implements TableSchemaInterface, SqlGeneratorInterface
      *
      * @var array<string, mixed>
      */
-    protected static $_indexKeys = [
+    protected static array $_indexKeys = [
         'type' => null,
         'columns' => [],
         'length' => [],
@@ -187,7 +189,7 @@ class TableSchema implements TableSchemaInterface, SqlGeneratorInterface
      *
      * @var array<string>
      */
-    protected static $_validIndexTypes = [
+    protected static array $_validIndexTypes = [
         self::INDEX_INDEX,
         self::INDEX_FULLTEXT,
     ];
@@ -197,7 +199,7 @@ class TableSchema implements TableSchemaInterface, SqlGeneratorInterface
      *
      * @var array<string>
      */
-    protected static $_validConstraintTypes = [
+    protected static array $_validConstraintTypes = [
         self::CONSTRAINT_PRIMARY,
         self::CONSTRAINT_UNIQUE,
         self::CONSTRAINT_FOREIGN,
@@ -208,7 +210,7 @@ class TableSchema implements TableSchemaInterface, SqlGeneratorInterface
      *
      * @var array<string>
      */
-    protected static $_validForeignKeyActions = [
+    protected static array $_validForeignKeyActions = [
         self::ACTION_CASCADE,
         self::ACTION_SET_NULL,
         self::ACTION_SET_DEFAULT,
@@ -383,6 +385,8 @@ class TableSchema implements TableSchemaInterface, SqlGeneratorInterface
         $this->_columns[$name]['type'] = $type;
         $this->_typeMap[$name] = $type;
 
+        unset($this->_columns[$name]['baseType']);
+
         return $this;
     }
 
@@ -469,15 +473,8 @@ class TableSchema implements TableSchemaInterface, SqlGeneratorInterface
 
         if (!in_array($attrs['type'], static::$_validIndexTypes, true)) {
             throw new DatabaseException(sprintf(
-                'Invalid index type "%s" in index "%s" in table "%s".',
+                'Invalid index type `%s` in index `%s` in table `%s`.',
                 $attrs['type'],
-                $name,
-                $this->_table
-            ));
-        }
-        if (empty($attrs['columns'])) {
-            throw new DatabaseException(sprintf(
-                'Index "%s" in table "%s" must have at least one column.',
                 $name,
                 $this->_table
             ));
@@ -486,8 +483,8 @@ class TableSchema implements TableSchemaInterface, SqlGeneratorInterface
         foreach ($attrs['columns'] as $field) {
             if (empty($this->_columns[$field])) {
                 $msg = sprintf(
-                    'Columns used in index "%s" in table "%s" must be added to the Table schema first. ' .
-                    'The column "%s" was not found.',
+                    'Columns used in index `%s` in table `%s` must be added to the Table schema first. ' .
+                    'The column `%s` was not found.',
                     $name,
                     $this->_table,
                     $field
@@ -521,20 +518,6 @@ class TableSchema implements TableSchemaInterface, SqlGeneratorInterface
     }
 
     /**
-     * Get the column(s) used for the primary key.
-     *
-     * @return array Column name(s) for the primary key. An
-     *   empty list will be returned when the table has no primary key.
-     * @deprecated 4.0.0 Renamed to {@link getPrimaryKey()}.
-     */
-    public function primaryKey(): array
-    {
-        deprecationWarning('`TableSchema::primaryKey()` is deprecated. Use `TableSchema::getPrimaryKey()`.');
-
-        return $this->getPrimarykey();
-    }
-
-    /**
      * @inheritDoc
      */
     public function getPrimaryKey(): array
@@ -560,14 +543,14 @@ class TableSchema implements TableSchemaInterface, SqlGeneratorInterface
         $attrs += static::$_indexKeys;
         if (!in_array($attrs['type'], static::$_validConstraintTypes, true)) {
             throw new DatabaseException(sprintf(
-                'Invalid constraint type "%s" in table "%s".',
+                'Invalid constraint type `%s` in table `%s`.',
                 $attrs['type'],
                 $this->_table
             ));
         }
         if (empty($attrs['columns'])) {
             throw new DatabaseException(sprintf(
-                'Constraints in table "%s" must have at least one column.',
+                'Constraints in table `%s` must have at least one column.',
                 $this->_table
             ));
         }
@@ -576,7 +559,7 @@ class TableSchema implements TableSchemaInterface, SqlGeneratorInterface
             if (empty($this->_columns[$field])) {
                 $msg = sprintf(
                     'Columns used in constraints must be added to the Table schema first. ' .
-                    'The column "%s" was not found in table "%s".',
+                    'The column `%s` was not found in table `%s`.',
                     $field,
                     $this->_table
                 );

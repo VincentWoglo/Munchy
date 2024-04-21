@@ -32,9 +32,9 @@ trait StaticConfigTrait
     /**
      * Configuration sets.
      *
-     * @var array<string, mixed>
+     * @var array<string|int, array<string, mixed>>
      */
-    protected static $_config = [];
+    protected static array $_config = [];
 
     /**
      * This method can be used to define configuration adapters for an application.
@@ -68,34 +68,36 @@ trait StaticConfigTrait
      * ```
      *
      * @param array<string, mixed>|string $key The name of the configuration, or an array of multiple configs.
-     * @param object|array<string, mixed>|null $config An array of name => configuration data for adapter.
+     * @param mixed $config Configuration value. Generally an array of name => configuration data for adapter.
      * @throws \BadMethodCallException When trying to modify an existing config.
      * @throws \LogicException When trying to store an invalid structured config array.
      * @return void
      */
-    public static function setConfig($key, $config = null): void
+    public static function setConfig(array|string $key, mixed $config = null): void
     {
         if ($config === null) {
             if (!is_array($key)) {
                 throw new LogicException('If config is null, key must be an array.');
             }
             foreach ($key as $name => $settings) {
-                static::setConfig($name, $settings);
+                static::setConfig((string)$name, $settings);
             }
 
             return;
         }
+        if (!is_string($key)) {
+            throw new LogicException('If config is not null, key must be a string.');
+        }
 
         if (isset(static::$_config[$key])) {
-            /** @psalm-suppress PossiblyInvalidArgument */
-            throw new BadMethodCallException(sprintf('Cannot reconfigure existing key "%s"', $key));
+            throw new BadMethodCallException(sprintf('Cannot reconfigure existing key `%s`.', $key));
         }
 
         if (is_object($config)) {
             $config = ['className' => $config];
         }
 
-        if (isset($config['url'])) {
+        if (is_array($config) && isset($config['url'])) {
             $parsed = static::parseDsn($config['url']);
             unset($config['url']);
             $config = $parsed + $config;
@@ -105,7 +107,7 @@ trait StaticConfigTrait
             $config['className'] = $config['engine'];
             unset($config['engine']);
         }
-        /** @psalm-suppress InvalidPropertyAssignmentValue */
+
         static::$_config[$key] = $config;
     }
 
@@ -115,7 +117,7 @@ trait StaticConfigTrait
      * @param string $key The name of the configuration.
      * @return mixed|null Configuration data at the named key or null if the key does not exist.
      */
-    public static function getConfig(string $key)
+    public static function getConfig(string $key): mixed
     {
         return static::$_config[$key] ?? null;
     }
@@ -129,7 +131,7 @@ trait StaticConfigTrait
      * @return mixed Configuration data at the named key.
      * @throws \InvalidArgumentException If value does not exist.
      */
-    public static function getConfigOrFail(string $key)
+    public static function getConfigOrFail(string $key): mixed
     {
         if (!isset(static::$_config[$key])) {
             throw new InvalidArgumentException(sprintf('Expected configuration `%s` not found.', $key));
@@ -155,7 +157,7 @@ trait StaticConfigTrait
         if (!isset(static::$_config[$config])) {
             return false;
         }
-        /** @psalm-suppress RedundantPropertyInitializationCheck */
+        /** @phpstan-ignore-next-line */
         if (isset(static::$_registry)) {
             static::$_registry->unload($config);
         }
@@ -251,14 +253,17 @@ REGEXP;
         preg_match($pattern, $dsn, $parsed);
 
         if (!$parsed) {
-            throw new InvalidArgumentException("The DSN string '{$dsn}' could not be parsed.");
+            throw new InvalidArgumentException(sprintf('The DSN string `%s` could not be parsed.', $dsn));
         }
 
         $exists = [];
+        /**
+         * @var string|int $k
+         */
         foreach ($parsed as $k => $v) {
             if (is_int($k)) {
                 unset($parsed[$k]);
-            } elseif (strpos($k, '_') === 0) {
+            } elseif (str_starts_with($k, '_')) {
                 $exists[substr($k, 1)] = ($v !== '');
                 unset($parsed[$k]);
             } elseif ($v === '' && !$exists[$k]) {
@@ -275,6 +280,9 @@ REGEXP;
 
         parse_str($query, $queryArgs);
 
+        /**
+         * @var string $key
+         */
         foreach ($queryArgs as $key => $value) {
             if ($value === 'true') {
                 $queryArgs[$key] = true;
@@ -285,15 +293,17 @@ REGEXP;
             }
         }
 
+        /** @var array<string, mixed> $parsed */
         $parsed = $queryArgs + $parsed;
 
         if (empty($parsed['className'])) {
             $classMap = static::getDsnClassMap();
 
-            $parsed['className'] = $parsed['scheme'];
-            if (isset($classMap[$parsed['scheme']])) {
-                /** @psalm-suppress PossiblyNullArrayOffset */
-                $parsed['className'] = $classMap[$parsed['scheme']];
+            /** @var string $scheme */
+            $scheme = $parsed['scheme'];
+            $parsed['className'] = $scheme;
+            if (isset($classMap[$scheme])) {
+                $parsed['className'] = $classMap[$scheme];
             }
         }
 
@@ -315,8 +325,7 @@ REGEXP;
     /**
      * Returns the DSN class map for this class.
      *
-     * @return array<string, string>
-     * @psalm-return array<string, class-string>
+     * @return array<string, class-string>
      */
     public static function getDsnClassMap(): array
     {

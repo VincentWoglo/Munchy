@@ -33,14 +33,14 @@ class Collection implements CollectionInterface
      *
      * @var \Cake\Database\Connection
      */
-    protected $_connection;
+    protected Connection $_connection;
 
     /**
      * Schema dialect instance.
      *
      * @var \Cake\Database\Schema\SchemaDialect
      */
-    protected $_dialect;
+    protected SchemaDialect $_dialect;
 
     /**
      * Constructor.
@@ -60,13 +60,12 @@ class Collection implements CollectionInterface
      */
     public function listTablesWithoutViews(): array
     {
-        [$sql, $params] = $this->_dialect->listTablesWithoutViewsSql($this->_connection->config());
+        [$sql, $params] = $this->_dialect->listTablesWithoutViewsSql($this->_connection->getDriver()->config());
         $result = [];
         $statement = $this->_connection->execute($sql, $params);
         while ($row = $statement->fetch()) {
             $result[] = $row[0];
         }
-        $statement->closeCursor();
 
         return $result;
     }
@@ -78,13 +77,12 @@ class Collection implements CollectionInterface
      */
     public function listTables(): array
     {
-        [$sql, $params] = $this->_dialect->listTablesSql($this->_connection->config());
+        [$sql, $params] = $this->_dialect->listTablesSql($this->_connection->getDriver()->config());
         $result = [];
         $statement = $this->_connection->execute($sql, $params);
         while ($row = $statement->fetch()) {
             $result[] = $row[0];
         }
-        $statement->closeCursor();
 
         return $result;
     }
@@ -104,13 +102,13 @@ class Collection implements CollectionInterface
      *
      * @param string $name The name of the table to describe.
      * @param array<string, mixed> $options The options to use, see above.
-     * @return \Cake\Database\Schema\TableSchema Object with column metadata.
+     * @return \Cake\Database\Schema\TableSchemaInterface Object with column metadata.
      * @throws \Cake\Database\Exception\DatabaseException when table cannot be described.
      */
     public function describe(string $name, array $options = []): TableSchemaInterface
     {
         $config = $this->_connection->config();
-        if (strpos($name, '.')) {
+        if (str_contains($name, '.')) {
             [$config['schema'], $name] = explode('.', $name);
         }
         $table = $this->_connection->getDriver()->newTableSchema($name);
@@ -133,7 +131,7 @@ class Collection implements CollectionInterface
      * @param string $stage The stage name.
      * @param string $name The table name.
      * @param array<string, mixed> $config The config data.
-     * @param \Cake\Database\Schema\TableSchema $schema The table schema instance.
+     * @param \Cake\Database\Schema\TableSchemaInterface $schema The table schema instance.
      * @return void
      * @throws \Cake\Database\Exception\DatabaseException on query failure.
      * @uses \Cake\Database\Schema\SchemaDialect::describeColumnSql
@@ -145,7 +143,7 @@ class Collection implements CollectionInterface
      * @uses \Cake\Database\Schema\SchemaDialect::convertForeignKeyDescription
      * @uses \Cake\Database\Schema\SchemaDialect::convertOptionsDescription
      */
-    protected function _reflect(string $stage, string $name, array $config, TableSchema $schema): void
+    protected function _reflect(string $stage, string $name, array $config, TableSchemaInterface $schema): void
     {
         $describeMethod = "describe{$stage}Sql";
         $convertMethod = "convert{$stage}Description";
@@ -159,10 +157,8 @@ class Collection implements CollectionInterface
         } catch (PDOException $e) {
             throw new DatabaseException($e->getMessage(), 500, $e);
         }
-        /** @psalm-suppress PossiblyFalseIterator */
         foreach ($statement->fetchAll('assoc') as $row) {
             $this->_dialect->{$convertMethod}($schema, $row);
         }
-        $statement->closeCursor();
     }
 }

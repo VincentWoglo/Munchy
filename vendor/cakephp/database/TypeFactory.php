@@ -31,7 +31,7 @@ class TypeFactory
      * @var array<string, string>
      * @psalm-var array<string, class-string<\Cake\Database\TypeInterface>>
      */
-    protected static $_types = [
+    protected static array $_types = [
         'tinyinteger' => Type\IntegerType::class,
         'smallinteger' => Type\IntegerType::class,
         'integer' => Type\IntegerType::class,
@@ -60,7 +60,7 @@ class TypeFactory
      *
      * @var array<\Cake\Database\TypeInterface>
      */
-    protected static $_builtTypes = [];
+    protected static array $_builtTypes = [];
 
     /**
      * Returns a Type object capable of converting a type identified by name.
@@ -75,7 +75,7 @@ class TypeFactory
             return static::$_builtTypes[$name];
         }
         if (!isset(static::$_types[$name])) {
-            throw new InvalidArgumentException(sprintf('Unknown type "%s"', $name));
+            throw new InvalidArgumentException(sprintf('Unknown type `%s`', $name));
         }
 
         return static::$_builtTypes[$name] = new static::$_types[$name]($name);
@@ -88,12 +88,11 @@ class TypeFactory
      */
     public static function buildAll(): array
     {
-        $result = [];
         foreach (static::$_types as $name => $type) {
-            $result[$name] = static::$_builtTypes[$name] ?? static::build($name);
+            static::$_builtTypes[$name] ??= static::build($name);
         }
 
-        return $result;
+        return static::$_builtTypes;
     }
 
     /**
@@ -106,7 +105,6 @@ class TypeFactory
     public static function set(string $name, TypeInterface $instance): void
     {
         static::$_builtTypes[$name] = $instance;
-        static::$_types[$name] = get_class($instance);
     }
 
     /**
@@ -142,7 +140,7 @@ class TypeFactory
      * @param string|null $type Type name to get mapped class for or null to get map array.
      * @return array<string>|string|null Configured class name for given $type or map array.
      */
-    public static function getMap(?string $type = null)
+    public static function getMap(?string $type = null): array|string|null
     {
         if ($type === null) {
             return static::$_types;

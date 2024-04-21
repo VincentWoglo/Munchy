@@ -60,7 +60,11 @@ body{
 }
 
 
-
+.error-message {
+    color: #FF0000;
+    font-size: fonts.$font-size-14;
+    padding-top: 10px;
+}
 .container{
     .main{
         .registerSection{
