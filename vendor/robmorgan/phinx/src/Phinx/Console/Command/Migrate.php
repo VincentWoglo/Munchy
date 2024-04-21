@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * MIT License
@@ -21,6 +22,7 @@ class Migrate extends AbstractCommand
     /**
      * @var string|null
      */
+    // phpcs:ignore SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
     protected static $defaultName = 'migrate';
 
     /**
@@ -63,7 +65,7 @@ EOT
     {
         $this->bootstrap($input, $output);
 
-        $version = $input->getOption('target');
+        $version = $input->getOption('target') !== null ? (int)$input->getOption('target') : null;
         /** @var string|null $environment */
         $environment = $input->getOption('environment');
         $date = $input->getOption('date');

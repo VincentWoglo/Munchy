@@ -2,7 +2,7 @@
     "require": {
         "twig/twig": "^3.0",
         "phroute/phroute": "^2.2",
-        "robmorgan/phinx": "^0.13.4",
+        "robmorgan/phinx": "^0.16.0",
         "sebastian/environment": "^6.0"
     },
     "autoload": {

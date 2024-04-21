@@ -493,7 +493,7 @@ When rolling back or printing the status of migrations, Phinx orders the execute
 Bootstrap Path
 ---------------
 
-You can provide a path to a `bootstrap` php file that will included before any commands phinx commands are run. Note that
+You can provide a path to a `bootstrap` php file that will be included before any phinx commands are run. Note that
 setting External Variables to modify the config will not work because the config has already been parsed by this point.
 
 .. code-block:: yaml
@@ -520,6 +520,11 @@ For some breaking changes, Phinx offers a way to opt-out of new behavior. The fo
 
 * ``unsigned_primary_keys``: Should Phinx create primary keys as unsigned integers? (default: ``true``)
 * ``column_null_default``: Should Phinx create columns as null by default? (default: ``true``)
+
+.. code-block:: yaml
+
+    feature_flags:
+        unsigned_primary_keys: false
 
 These values can also be set by modifying class fields on the ```Phinx\Config\FeatureFlags``` class, converting
 the flag name to ``camelCase``, for example:

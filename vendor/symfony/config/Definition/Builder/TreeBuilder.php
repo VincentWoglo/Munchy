@@ -20,7 +20,14 @@ use Symfony\Component\Config\Definition\NodeInterface;
  */
 class TreeBuilder implements NodeParentInterface
 {
+    /**
+     * @var NodeInterface|null
+     */
     protected $tree;
+
+    /**
+     * @var NodeDefinition
+     */
     protected $root;
 
     public function __construct(string $name, string $type = 'array', NodeBuilder $builder = null)
@@ -44,13 +51,12 @@ class TreeBuilder implements NodeParentInterface
      */
     public function buildTree(): NodeInterface
     {
-        if (null !== $this->tree) {
-            return $this->tree;
-        }
-
-        return $this->tree = $this->root->getNode(true);
+        return $this->tree ??= $this->root->getNode(true);
     }
 
+    /**
+     * @return void
+     */
     public function setPathSeparator(string $separator)
     {
         // unset last built as changing path separator changes all nodes

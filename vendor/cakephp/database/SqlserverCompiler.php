@@ -32,25 +32,30 @@ class SqlserverCompiler extends QueryCompiler
      *
      * @var bool
      */
-    protected $_orderedUnion = false;
+    protected bool $_orderedUnion = false;
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
+     *
+     * @var array<string, string>
      */
-    protected $_templates = [
+    protected array $_templates = [
         'delete' => 'DELETE',
         'where' => ' WHERE %s',
         'group' => ' GROUP BY %s',
         'order' => ' %s',
         'offset' => ' OFFSET %s ROWS',
         'epilog' => ' %s',
+        'comment' => '/* %s */ ',
     ];
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
+     *
+     * @var array<string>
      */
-    protected $_selectParts = [
-        'with', 'select', 'from', 'join', 'where', 'group', 'having', 'window', 'order',
+    protected array $_selectParts = [
+        'comment', 'with', 'select', 'from', 'join', 'where', 'group', 'having', 'window', 'order',
         'offset', 'limit', 'union', 'epilog',
     ];
 
@@ -59,7 +64,7 @@ class SqlserverCompiler extends QueryCompiler
      * it constructs the CTE definitions list without generating the `RECURSIVE`
      * keyword that is neither required nor valid.
      *
-     * @param array $parts List of CTEs to be transformed to string
+     * @param array<\Cake\Database\Expression\CommonTableExpression> $parts List of CTEs to be transformed to string
      * @param \Cake\Database\Query $query The query that is being compiled
      * @param \Cake\Database\ValueBinder $binder Value binder used to generate parameter placeholder
      * @return string
@@ -132,7 +137,7 @@ class SqlserverCompiler extends QueryCompiler
      * @param \Cake\Database\ValueBinder $binder Value binder used to generate parameter placeholder
      * @return string
      */
-    protected function _buildHavingPart($parts, $query, $binder)
+    protected function _buildHavingPart(array $parts, Query $query, ValueBinder $binder): string
     {
         $selectParts = $query->clause('select');
 

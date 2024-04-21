@@ -5,7 +5,7 @@
     echo $twig->render('register.html', [
         'stylesheet' => '/Munchy/view/style/css/register.css', //could be nested array also
         'javascriptModule' => [
-            '/Munchy/view/script/register/registerValidation.js',
+            '/Munchy/view/script/register/ajaxRegister.js',
         ],
         'javascript' => []
     ]);

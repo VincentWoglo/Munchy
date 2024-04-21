@@ -13,11 +13,13 @@
             {% block dashboard_navigation %}
                 {% include '_navigation.html' %}
             {% endblock %}
-            <div class="dashboard_main">
-                {% block dashboard_menuBar %}
-                    {% include '_menuBar.html' %}
-                {% endblock %}
-            </div>
+            <section>
+                <div class="dashboard_main">
+                    {% block dashboard_menuBar %}
+                        {% include '_menuBar.html' %}
+                    {% endblock %}
+                </div>
+            </section>
         </div>
     </div>
 </body>

@@ -14,6 +14,7 @@ class databaseConnection
     private $password;
     private $username;
     private $databaseName;
+    private $portNumber;
     protected $databaseConnection;
 
     public function __construct()
@@ -22,6 +23,7 @@ class databaseConnection
         $this->password = DATABASE_PASSWORD;
         $this->username = DATABASE_USERNAME;
         $this->databaseName = DATABASE_NAME;
+        $this->portNumber = DATABASE_PORT;
     }
 
 
@@ -29,7 +31,7 @@ class databaseConnection
     {
         try
         {
-            $this->databaseConnection = new PDO("mysql:host=$this->hostname; port=3309; dbname=$this->databaseName", $this->username, $this->password);
+            $this->databaseConnection = new PDO("mysql:host=$this->hostname; port=$this->portNumber; dbname=$this->databaseName", $this->username, $this->password);
             $this->databaseConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
             return $this->databaseConnection;
@@ -38,6 +40,15 @@ class databaseConnection
         {
             throw new \PDOException($e->getMessage(), $e->getCode());
         }
+    }
+
+
+    /**
+     * Disconnects database connection
+     */
+    private function disconnectDatabase()
+    {
+
     }
 }
 ?>

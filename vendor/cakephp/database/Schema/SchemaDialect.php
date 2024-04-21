@@ -16,7 +16,7 @@ declare(strict_types=1);
  */
 namespace Cake\Database\Schema;
 
-use Cake\Database\DriverInterface;
+use Cake\Database\Driver;
 use Cake\Database\Type\ColumnSchemaAwareInterface;
 use Cake\Database\TypeFactory;
 use InvalidArgumentException;
@@ -34,9 +34,9 @@ abstract class SchemaDialect
     /**
      * The driver instance being used.
      *
-     * @var \Cake\Database\DriverInterface
+     * @var \Cake\Database\Driver
      */
-    protected $_driver;
+    protected Driver $_driver;
 
     /**
      * Constructor
@@ -44,9 +44,9 @@ abstract class SchemaDialect
      * This constructor will connect the driver so that methods like columnSql() and others
      * will fail when the driver has not been connected.
      *
-     * @param \Cake\Database\DriverInterface $driver The driver to use.
+     * @param \Cake\Database\Driver $driver The driver to use.
      */
-    public function __construct(DriverInterface $driver)
+    public function __construct(Driver $driver)
     {
         $driver->connect();
         $this->_driver = $driver;
@@ -104,7 +104,7 @@ abstract class SchemaDialect
      * @param array<string>|string $references The referenced columns of a foreign key constraint statement
      * @return string
      */
-    protected function _convertConstraintColumns($references): string
+    protected function _convertConstraintColumns(array|string $references): string
     {
         if (is_string($references)) {
             return $this->_driver->quoteIdentifier($references);
@@ -337,8 +337,3 @@ abstract class SchemaDialect
      */
     abstract public function truncateTableSql(TableSchema $schema): array;
 }
-
-// phpcs:disable
-// Add backwards compatible alias.
-class_alias('Cake\Database\Schema\SchemaDialect', 'Cake\Database\Schema\BaseSchema');
-// phpcs:enable

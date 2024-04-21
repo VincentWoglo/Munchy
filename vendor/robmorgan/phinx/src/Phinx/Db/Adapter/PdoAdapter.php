@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 /**
  * MIT License
@@ -10,6 +11,10 @@ namespace Phinx\Db\Adapter;
 use BadMethodCallException;
 use Cake\Database\Connection;
 use Cake\Database\Query;
+use Cake\Database\Query\DeleteQuery;
+use Cake\Database\Query\InsertQuery;
+use Cake\Database\Query\SelectQuery;
+use Cake\Database\Query\UpdateQuery;
 use InvalidArgumentException;
 use PDO;
 use PDOException;
@@ -34,20 +39,25 @@ use Phinx\Db\Table\Table;
 use Phinx\Db\Util\AlterInstructions;
 use Phinx\Migration\MigrationInterface;
 use Phinx\Util\Literal;
+use ReflectionProperty;
 use RuntimeException;
 use Symfony\Component\Console\Output\OutputInterface;
+use UnexpectedValueException;
 
 /**
  * Phinx PDO Adapter.
- *
- * @author Rob Morgan <robbym@gmail.com>
  */
 abstract class PdoAdapter extends AbstractAdapter implements DirectActionInterface
 {
     /**
      * @var \PDO|null
      */
-    protected $connection;
+    protected ?PDO $connection = null;
+
+    /**
+     * @var \Cake\Database\Connection|null
+     */
+    protected ?Connection $decoratedConnection = null;
 
     /**
      * Writes a message to stdout if verbose output is on
@@ -55,7 +65,7 @@ abstract class PdoAdapter extends AbstractAdapter implements DirectActionInterfa
      * @param string $message The message to show
      * @return void
      */
-    protected function verboseLog($message): void
+    protected function verboseLog(string $message): void
     {
         if (
             !$this->isDryRunEnabled() &&
@@ -89,7 +99,7 @@ abstract class PdoAdapter extends AbstractAdapter implements DirectActionInterfa
                 if (strpos($key, 'attr_') === 0) {
                     $pdoConstant = '\PDO::' . strtoupper($key);
                     if (!defined($pdoConstant)) {
-                        throw new \UnexpectedValueException('Invalid PDO attribute: ' . $key . ' (' . $pdoConstant . ')');
+                        throw new UnexpectedValueException('Invalid PDO attribute: ' . $key . ' (' . $pdoConstant . ')');
                     }
                     $db->setAttribute(constant($pdoConstant), $option);
                 }
@@ -207,20 +217,76 @@ abstract class PdoAdapter extends AbstractAdapter implements DirectActionInterfa
     abstract public function getDecoratedConnection(): Connection;
 
     /**
+     * Build connection instance.
+     *
+     * @param class-string<\Cake\Database\Driver> $driverClass Driver class name.
+     * @param array $options Options.
+     * @return \Cake\Database\Connection
+     */
+    protected function buildConnection(string $driverClass, array $options): Connection
+    {
+        $driver = new $driverClass($options);
+        $prop = new ReflectionProperty($driver, 'pdo');
+        $prop->setValue($driver, $this->connection);
+
+        return new Connection(['driver' => $driver] + $options);
+    }
+
+    /**
      * @inheritDoc
      */
-    public function getQueryBuilder(): Query
+    public function getQueryBuilder(string $type): Query
     {
-        return $this->getDecoratedConnection()->newQuery();
+        return match ($type) {
+            Query::TYPE_SELECT => $this->getDecoratedConnection()->selectQuery(),
+            Query::TYPE_INSERT => $this->getDecoratedConnection()->insertQuery(),
+            Query::TYPE_UPDATE => $this->getDecoratedConnection()->updateQuery(),
+            Query::TYPE_DELETE => $this->getDecoratedConnection()->deleteQuery(),
+            default => throw new InvalidArgumentException(
+                'Query type must be one of: `select`, `insert`, `update`, `delete`.'
+            )
+        };
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getSelectBuilder(): SelectQuery
+    {
+        return $this->getDecoratedConnection()->selectQuery();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getInsertBuilder(): InsertQuery
+    {
+        return $this->getDecoratedConnection()->insertQuery();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getUpdateBuilder(): UpdateQuery
+    {
+        return $this->getDecoratedConnection()->updateQuery();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDeleteBuilder(): DeleteQuery
+    {
+        return $this->getDecoratedConnection()->deleteQuery();
     }
 
     /**
      * Executes a query and returns PDOStatement.
      *
      * @param string $sql SQL
-     * @return \PDOStatement|false
+     * @return mixed
      */
-    public function query(string $sql, array $params = [])
+    public function query(string $sql, array $params = []): mixed
     {
         if (empty($params)) {
             return $this->getConnection()->query($sql);
@@ -234,7 +300,7 @@ abstract class PdoAdapter extends AbstractAdapter implements DirectActionInterfa
     /**
      * @inheritDoc
      */
-    public function fetchRow(string $sql)
+    public function fetchRow(string $sql): array|false
     {
         return $this->query($sql)->fetch();
     }
@@ -281,7 +347,7 @@ abstract class PdoAdapter extends AbstractAdapter implements DirectActionInterfa
      * @param mixed $value The value to quote
      * @return mixed
      */
-    protected function quoteValue($value)
+    protected function quoteValue(mixed $value): mixed
     {
         if (is_numeric($value)) {
             return $value;
@@ -573,7 +639,7 @@ abstract class PdoAdapter extends AbstractAdapter implements DirectActionInterfa
     /**
      * @inheritDoc
      */
-    public function castToBool($value)
+    public function castToBool($value): mixed
     {
         return (bool)$value ? 1 : 0;
     }
@@ -585,7 +651,7 @@ abstract class PdoAdapter extends AbstractAdapter implements DirectActionInterfa
      * @param int $attribute One of the PDO::ATTR_* constants
      * @return mixed
      */
-    public function getAttribute(int $attribute)
+    public function getAttribute(int $attribute): mixed
     {
         return $this->connection->getAttribute($attribute);
     }
@@ -594,19 +660,19 @@ abstract class PdoAdapter extends AbstractAdapter implements DirectActionInterfa
      * Get the definition for a `DEFAULT` statement.
      *
      * @param mixed $default Default value
-     * @param string|null $columnType column type added
+     * @param string|\Phinx\Util\Literal|null $columnType Column type
      * @return string
      */
-    protected function getDefaultValueDefinition($default, ?string $columnType = null): string
+    protected function getDefaultValueDefinition(mixed $default, string|Literal|null $columnType = null): string
     {
         if ($default instanceof Literal) {
             $default = (string)$default;
-        } elseif (is_string($default) && strpos($default, 'CURRENT_TIMESTAMP') !== 0) {
+        } elseif (is_string($default) && stripos($default, 'CURRENT_TIMESTAMP') !== 0) {
             // Ensure a defaults of CURRENT_TIMESTAMP(3) is not quoted.
             $default = $this->getConnection()->quote($default);
         } elseif (is_bool($default)) {
             $default = $this->castToBool($default);
-        } elseif ($default !== null && $columnType === static::PHINX_TYPE_BOOLEAN) {
+        } elseif ($default !== null && (string)$columnType === static::PHINX_TYPE_BOOLEAN) {
             $default = $this->castToBool((bool)$default);
         }
 
@@ -734,7 +800,7 @@ abstract class PdoAdapter extends AbstractAdapter implements DirectActionInterfa
      * @param string|string[] $columns Column(s)
      * @return \Phinx\Db\Util\AlterInstructions
      */
-    abstract protected function getDropIndexByColumnsInstructions(string $tableName, $columns): AlterInstructions;
+    abstract protected function getDropIndexByColumnsInstructions(string $tableName, string|array $columns): AlterInstructions;
 
     /**
      * @inheritdoc
@@ -855,7 +921,7 @@ abstract class PdoAdapter extends AbstractAdapter implements DirectActionInterfa
      * @param string|string[]|null $newColumns Column name(s) to belong to the primary key, or null to drop the key
      * @return \Phinx\Db\Util\AlterInstructions
      */
-    abstract protected function getChangePrimaryKeyInstructions(Table $table, $newColumns): AlterInstructions;
+    abstract protected function getChangePrimaryKeyInstructions(Table $table, string|array|null $newColumns): AlterInstructions;
 
     /**
      * @inheritdoc

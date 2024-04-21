@@ -34,7 +34,7 @@ class QueryCompiler
      *
      * @var array<string, string>
      */
-    protected $_templates = [
+    protected array $_templates = [
         'delete' => 'DELETE',
         'where' => ' WHERE %s',
         'group' => ' GROUP BY %s ',
@@ -43,6 +43,7 @@ class QueryCompiler
         'limit' => ' LIMIT %s',
         'offset' => ' OFFSET %s',
         'epilog' => ' %s',
+        'comment' => '/* %s */ ',
     ];
 
     /**
@@ -50,8 +51,8 @@ class QueryCompiler
      *
      * @var array<string>
      */
-    protected $_selectParts = [
-        'with', 'select', 'from', 'join', 'where', 'group', 'having', 'window', 'order',
+    protected array $_selectParts = [
+        'comment', 'with', 'select', 'from', 'join', 'where', 'group', 'having', 'window', 'order',
         'limit', 'offset', 'union', 'epilog',
     ];
 
@@ -60,21 +61,21 @@ class QueryCompiler
      *
      * @var array<string>
      */
-    protected $_updateParts = ['with', 'update', 'set', 'where', 'epilog'];
+    protected array $_updateParts = ['comment', 'with', 'update', 'set', 'where', 'epilog'];
 
     /**
      * The list of query clauses to traverse for generating a DELETE statement
      *
      * @var array<string>
      */
-    protected $_deleteParts = ['with', 'delete', 'modifier', 'from', 'where', 'epilog'];
+    protected array $_deleteParts = ['comment', 'with', 'delete', 'modifier', 'from', 'where', 'epilog'];
 
     /**
      * The list of query clauses to traverse for generating an INSERT statement
      *
      * @var array<string>
      */
-    protected $_insertParts = ['with', 'insert', 'values', 'epilog'];
+    protected array $_insertParts = ['comment', 'with', 'insert', 'values', 'epilog'];
 
     /**
      * Indicate whether this query dialect supports ordered unions.
@@ -83,14 +84,14 @@ class QueryCompiler
      *
      * @var bool
      */
-    protected $_orderedUnion = true;
+    protected bool $_orderedUnion = true;
 
     /**
      * Indicate whether aliases in SELECT clause need to be always quoted.
      *
      * @var bool
      */
-    protected $_quotedSelectAliases = false;
+    protected bool $_quotedSelectAliases = false;
 
     /**
      * Returns the SQL representation of the provided query after generating
@@ -124,7 +125,7 @@ class QueryCompiler
     }
 
     /**
-     * Returns a callable object that can be used to compile a SQL string representation
+     * Returns a closure that can be used to compile a SQL string representation
      * of this query.
      *
      * @param string $sql initial sql string to append to
@@ -134,7 +135,7 @@ class QueryCompiler
      */
     protected function _sqlCompiler(string &$sql, Query $query, ValueBinder $binder): Closure
     {
-        return function ($part, $partName) use (&$sql, $query, $binder) {
+        return function ($part, $partName) use (&$sql, $query, $binder): void {
             if (
                 $part === null ||
                 (is_array($part) && empty($part)) ||
@@ -162,7 +163,7 @@ class QueryCompiler
      * it constructs the CTE definitions list and generates the `RECURSIVE`
      * keyword when required.
      *
-     * @param array $parts List of CTEs to be transformed to string
+     * @param array<\Cake\Database\Expression\CommonTableExpression> $parts List of CTEs to be transformed to string
      * @param \Cake\Database\Query $query The query that is being compiled
      * @param \Cake\Database\ValueBinder $binder Value binder used to generate parameter placeholder
      * @return string
@@ -201,7 +202,7 @@ class QueryCompiler
         $distinct = $query->clause('distinct');
         $modifiers = $this->_buildModifierPart($query->clause('modifier'), $query, $binder);
 
-        $driver = $query->getConnection()->getDriver();
+        $driver = $query->getConnection()->getDriver($query->getConnectionRole());
         $quoteIdentifiers = $driver->isAutoQuotingEnabled() || $this->_quotedSelectAliases;
         $normalized = [];
         $parts = $this->_stringifyExpressions($parts, $binder);
@@ -308,7 +309,11 @@ class QueryCompiler
     {
         $windows = [];
         foreach ($parts as $window) {
-            $windows[] = $window['name']->sql($binder) . ' AS (' . $window['window']->sql($binder) . ')';
+            /** @var \Cake\Database\Expression\IdentifierExpression $expr */
+            $expr = $window['name'];
+            /** @var \Cake\Database\Expression\IdentifierExpression $windowExpr */
+            $windowExpr = $window['window'];
+            $windows[] = $expr->sql($binder) . ' AS (' . $windowExpr->sql($binder) . ')';
         }
 
         return ' WINDOW ' . implode(', ', $windows);
@@ -351,7 +356,9 @@ class QueryCompiler
     protected function _buildUnionPart(array $parts, Query $query, ValueBinder $binder): string
     {
         $parts = array_map(function ($p) use ($binder) {
-            $p['query'] = $p['query']->sql($binder);
+            /** @var \Cake\Database\Expression\IdentifierExpression $expr */
+            $expr = $p['query'];
+            $p['query'] = $expr->sql($binder);
             $p['query'] = $p['query'][0] === '(' ? trim($p['query'], '()') : $p['query'];
             $prefix = $p['all'] ? 'ALL ' : '';
             if ($this->_orderedUnion) {

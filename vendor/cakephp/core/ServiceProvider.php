@@ -19,7 +19,6 @@ namespace Cake\Core;
 use League\Container\DefinitionContainerInterface;
 use League\Container\ServiceProvider\AbstractServiceProvider;
 use League\Container\ServiceProvider\BootableServiceProviderInterface;
-use RuntimeException;
 
 /**
  * Container ServiceProvider
@@ -37,13 +36,10 @@ abstract class ServiceProvider extends AbstractServiceProvider implements Bootab
      * @var array<string>
      * @see ServiceProvider::provides()
      */
-    protected $provides = [];
+    protected array $provides = [];
 
     /**
      * Get the container.
-     *
-     * This method's actual return type and documented return type differ
-     * because PHP 7.2 doesn't support return type narrowing.
      *
      * @return \Cake\Core\ContainerInterface
      */
@@ -51,14 +47,14 @@ abstract class ServiceProvider extends AbstractServiceProvider implements Bootab
     {
         $container = parent::getContainer();
 
-        if (!($container instanceof ContainerInterface)) {
-            $message = sprintf(
+        assert(
+            $container instanceof ContainerInterface,
+            sprintf(
                 'Unexpected container type. Expected `%s` got `%s` instead.',
                 ContainerInterface::class,
-                getTypeName($container)
-            );
-            throw new RuntimeException($message);
-        }
+                get_debug_type($container)
+            )
+        );
 
         return $container;
     }

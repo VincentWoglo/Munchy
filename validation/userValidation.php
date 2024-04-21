@@ -1,6 +1,7 @@
 <?php
     namespace munchy\validation;
 
+
     class userValidation extends validation {
 
         /**
@@ -10,7 +11,7 @@
          * @return array
          * 
          */
-        protected function isValidPassword($userPassword, $minPasswordLength) : array
+        protected function isValidPassword($userPassword, $minPasswordLength, $passwordToMatch) : array
         {
             $returnMessage = [];
 
@@ -27,17 +28,39 @@
                     $returnMessage[] = [$messageKey => true];
             }
 
+
             return $returnMessage;
         }
 
 
         /**
+         * @access public
          * @return array
          * 
          */
-        protected function isValidEmail()
+        public function isValidEmail(string $userEmail) : array
         {
+            $returnMessage = [];
 
+            if($this->isValidEmailClient($userEmail) == false)
+            {
+                array_push($returnMessage, ["message" => "Please check you email", "fieldName" => "emailInput"]);
+            }
+
+            if($this->containsAtSymbol($userEmail) == false)
+            {
+                array_push($returnMessage, ["message" => "You email must contain an @ symbol", "fieldName" => "emailInput"]);
+            }
+
+            return $returnMessage;
+        }
+
+
+        protected function isValidUserName($userPassword, $minPasswordLength) : array
+        {
+            $returnMessage = [];
+
+            return $returnMessage;
         }
 
         

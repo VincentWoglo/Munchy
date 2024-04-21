@@ -34,10 +34,37 @@
         /**
          * Check if the user is using a valid email client
          * Checks for popular email clients
-         * 
+         * @access public
          * @return bool
          */
-        public function isValidEmailClient(){}
+        public function isValidEmailClient(string $userEmail) : bool
+        {
+            // This removes illegal characters from the email => $userEmail
+            $emailAddress = filter_var($userEmail, FILTER_SANITIZE_EMAIL);
+
+            // Validate the email
+            if(filter_var($emailAddress, FILTER_VALIDATE_EMAIL))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+
+        /**
+         * Password match the re-password
+         * 
+         * @access public
+         * @return bool
+         */
+        public function passwordMatch(string $mainPassword, string $passwordToMatch) : bool
+        {
+            if ($mainPassword === $passwordToMatch)
+                return true;
+                        
+            return false;
+        }
 
 
         /**
